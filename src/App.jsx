@@ -169,8 +169,7 @@ const Resumen = ({ data, onReset }) => {
       await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(data),
+        body: (() => { const f = new FormData(); f.append("data", JSON.stringify(data)); return f; })(),
       });
       setEnviado(true);
     } catch (err) {
