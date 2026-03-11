@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqRYuPU5wldokSFClKauyyaOD1_aPw3uOARM12jP_c7e08RWTfgHWalOQByfgcY_o1/exec";
+
 const STEPS = [
   { id: "tipo", label: "Tipo", icon: "⚡" },
   { id: "identificacion", label: "Identificación", icon: "👤" },
@@ -41,17 +43,13 @@ const CheckGroup = ({ label, options, value = [], onChange, color = "#CC0000" })
             key={opt}
             onClick={() => onChange(active ? value.filter(v => v !== opt) : [...value, opt])}
             style={{
-              padding: "7px 14px",
-              borderRadius: 6,
+              padding: "7px 14px", borderRadius: 6,
               border: `2px solid ${active ? color : "#DDD"}`,
               background: active ? color : "#FAFAFA",
               color: active ? "#FFF" : "#3D3D3D",
-              fontSize: 12,
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: active ? 700 : 400,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              display: "flex", alignItems: "center", gap: 6,
+              fontSize: 12, fontFamily: "'DM Sans', sans-serif",
+              fontWeight: active ? 700 : 400, cursor: "pointer",
+              transition: "all 0.15s ease", display: "flex", alignItems: "center", gap: 6,
             }}
           >
             <span style={{ fontSize: 10 }}>{active ? "✓" : "○"}</span>
@@ -76,17 +74,13 @@ const RadioGroup = ({ label, options, value, onChange, color = "#CC0000", highli
             key={opt}
             onClick={() => onChange(opt)}
             style={{
-              padding: "7px 14px",
-              borderRadius: 6,
+              padding: "7px 14px", borderRadius: 6,
               border: `2px solid ${active ? color : "#DDD"}`,
               background: active ? color : "#FAFAFA",
               color: active ? "#FFF" : "#3D3D3D",
-              fontSize: 12,
-              fontFamily: "'DM Sans', sans-serif",
-              fontWeight: active ? 700 : 400,
-              cursor: "pointer",
-              transition: "all 0.15s ease",
-              display: "flex", alignItems: "center", gap: 6,
+              fontSize: 12, fontFamily: "'DM Sans', sans-serif",
+              fontWeight: active ? 700 : 400, cursor: "pointer",
+              transition: "all 0.15s ease", display: "flex", alignItems: "center", gap: 6,
             }}
           >
             <span style={{ fontSize: 10 }}>{active ? "✓" : "○"}</span>
@@ -105,17 +99,13 @@ const Field = ({ label, value, onChange, placeholder = "", type = "text", requir
     </label>
     {note && <div style={{ fontSize: 11, color: "#888", marginBottom: 6, fontStyle: "italic" }}>{note}</div>}
     <input
-      type={type}
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
+      type={type} value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder}
       style={{
         width: "100%", padding: "10px 14px", border: "none",
-        borderBottom: "2px solid #CC0000",
-        background: "#F9F9F9", borderRadius: "6px 6px 0 0",
-        fontSize: 13, fontFamily: "'DM Sans', sans-serif", color: "#1A1A2E",
-        outline: "none", boxSizing: "border-box",
-        transition: "border-color 0.2s",
+        borderBottom: "2px solid #CC0000", background: "#F9F9F9",
+        borderRadius: "6px 6px 0 0", fontSize: 13,
+        fontFamily: "'DM Sans', sans-serif", color: "#1A1A2E",
+        outline: "none", boxSizing: "border-box", transition: "border-color 0.2s",
       }}
       onFocus={e => e.target.style.borderBottomColor = "#1A1A2E"}
       onBlur={e => e.target.style.borderBottomColor = "#CC0000"}
@@ -123,22 +113,18 @@ const Field = ({ label, value, onChange, placeholder = "", type = "text", requir
   </div>
 );
 
-const TextArea = ({ label, value, onChange, placeholder = "", note = "" }) => (
+const TextArea = ({ label, value, onChange, placeholder = "" }) => (
   <div style={{ marginBottom: 16 }}>
     <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#1A1A2E", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>
       {label}
     </label>
-    {note && <div style={{ fontSize: 11, color: "#888", marginBottom: 6, fontStyle: "italic" }}>{note}</div>}
     <textarea
-      value={value}
-      onChange={e => onChange(e.target.value)}
-      placeholder={placeholder}
-      rows={3}
+      value={value} onChange={e => onChange(e.target.value)} placeholder={placeholder} rows={3}
       style={{
         width: "100%", padding: "10px 14px", border: "none",
-        borderBottom: "2px solid #CC0000",
-        background: "#F9F9F9", borderRadius: "6px 6px 0 0",
-        fontSize: 13, fontFamily: "'DM Sans', sans-serif", color: "#1A1A2E",
+        borderBottom: "2px solid #CC0000", background: "#F9F9F9",
+        borderRadius: "6px 6px 0 0", fontSize: 13,
+        fontFamily: "'DM Sans', sans-serif", color: "#1A1A2E",
         outline: "none", resize: "vertical", boxSizing: "border-box",
       }}
     />
@@ -146,9 +132,7 @@ const TextArea = ({ label, value, onChange, placeholder = "", note = "" }) => (
 );
 
 const TwoCol = ({ children }) => (
-  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-    {children}
-  </div>
+  <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>{children}</div>
 );
 
 const SectionTitle = ({ icon, title, subtitle, color = "#1A1A2E" }) => (
@@ -176,6 +160,25 @@ const KeySection = ({ children }) => (
 );
 
 const Resumen = ({ data, onReset }) => {
+  const [enviando, setEnviando] = useState(false);
+  const [enviado, setEnviado] = useState(false);
+
+  const enviar = async () => {
+    setEnviando(true);
+    try {
+      await fetch(SCRIPT_URL, {
+        method: "POST",
+        mode: "no-cors",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
+      });
+      setEnviado(true);
+    } catch (err) {
+      alert("❌ Error al enviar. Verifica tu conexión e intenta de nuevo.");
+    }
+    setEnviando(false);
+  };
+
   const rows = [
     ["Modo", data.modo],
     ["Nombre", data.nombre],
@@ -190,8 +193,8 @@ const Resumen = ({ data, onReset }) => {
     ["Barrio / Zona", data.barrioZona],
     ["Tipo de negocio", data.tipoNegocio],
     ["Uso del suelo", (data.usoSuelo || []).join(", ")],
-    ["Área Total mín. (m²)", data.areaTotalMin],
-    ["Área Total máx. (m²)", data.areaTotalMax],
+    ["Área mín. (m²)", data.areaTotalMin],
+    ["Área máx. (m²)", data.areaTotalMax],
     ["Características", (data.caracteristicas || []).join(", ")],
     ["Plazo del contrato", (data.plazoContrato || []).join(", ")],
     ...(data.modo === "Busco Locales" ? [
@@ -208,6 +211,33 @@ const Resumen = ({ data, onReset }) => {
     ["Observaciones", data.observaciones],
   ].filter(([, v]) => v && String(v).trim());
 
+  if (enviado) {
+    return (
+      <div style={{ textAlign: "center", padding: "40px 20px" }}>
+        <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
+        <h2 style={{ fontSize: 22, fontWeight: 800, color: "#1A1A2E", fontFamily: "'DM Serif Display', serif", marginBottom: 8 }}>
+          IUB enviado correctamente
+        </h2>
+        <p style={{ color: "#666", fontSize: 14, marginBottom: 8 }}>
+          Los datos llegaron a Google Sheets y recibirás un correo de confirmación.
+        </p>
+        <p style={{ color: "#888", fontSize: 12, marginBottom: 32 }}>
+          Revisa tu bandeja de entrada en Gmail.
+        </p>
+        <button
+          onClick={onReset}
+          style={{
+            padding: "12px 32px", background: "linear-gradient(135deg, #CC0000, #990000)",
+            color: "#FFF", border: "none", borderRadius: 8, fontSize: 14,
+            fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
+          }}
+        >
+          Diligenciar otro IUB
+        </button>
+      </div>
+    );
+  }
+
   return (
     <div>
       <SectionTitle icon="✅" title="RESUMEN DEL IUB" subtitle="Revisa la información antes de enviar" color="#1A1A2E" />
@@ -217,8 +247,7 @@ const Resumen = ({ data, onReset }) => {
             display: "grid", gridTemplateColumns: "200px 1fr",
             padding: "10px 16px",
             background: i % 2 === 0 ? "#FFF" : "#F9F9F9",
-            borderBottom: "1px solid #F0F0F0",
-            alignItems: "start"
+            borderBottom: "1px solid #F0F0F0", alignItems: "start"
           }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: k.startsWith("⚑") ? "#8B5E00" : "#888", textTransform: "uppercase", letterSpacing: "0.06em", paddingRight: 8 }}>{k}</div>
             <div style={{ fontSize: 13, color: "#1A1A2E" }}>{v}</div>
@@ -227,43 +256,17 @@ const Resumen = ({ data, onReset }) => {
       </div>
       <div style={{ display: "flex", gap: 12 }}>
         <button
-          onClick={async () => {
-  try {
-    await fetch("https://script.google.com/macros/s/AKfycbwqRYuPU5wldokSFClKauyyaOD1_aPw3uOARM12jP_c7e08RWTfgHWalOQByfgcY_o1/exec", {
-      method: "POST",
-      body: JSON.stringify(data),
-    });
-    alert("✅ IUB enviado correctamente. Revisa tu Google Sheets.");
-  } catch (err) {
-    alert("❌ Error al enviar. Intenta de nuevo.");
-  }
-}}
-```
-
-Guarda el archivo con **Ctrl + S**.
-
----
-
-**Sube el cambio a GitHub** — abre la terminal y escribe:
-```
-cd %USERPROFILE%\Documents\iub-terramatch
-```
-```
-git add .
-```
-```
-git commit -m "conectar formulario con Google Sheets"
-```
-```
-git push
+          onClick={enviar}
+          disabled={enviando}
           style={{
-            flex: 1, padding: "14px 0", background: "linear-gradient(135deg, #CC0000, #990000)",
+            flex: 1, padding: "14px 0",
+            background: enviando ? "#AAA" : "linear-gradient(135deg, #CC0000, #990000)",
             color: "#FFF", border: "none", borderRadius: 8, fontSize: 14,
-            fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-            letterSpacing: "0.05em",
+            fontWeight: 700, cursor: enviando ? "not-allowed" : "pointer",
+            fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em",
           }}
         >
-          ENVIAR IUB ✓
+          {enviando ? "Enviando..." : "ENVIAR IUB ✓"}
         </button>
         <button
           onClick={onReset}
@@ -283,9 +286,7 @@ git push
 export default function IUBTerramatch() {
   const [step, setStep] = useState(0);
   const [data, setData] = useState(initialData);
-
   const set = (key) => (val) => setData(d => ({ ...d, [key]: val }));
-
   const isBusco = data.modo === "Busco Locales";
 
   const canNext = () => {
@@ -293,8 +294,6 @@ export default function IUBTerramatch() {
     if (step === 1) return !!data.nombre && !!data.email;
     return true;
   };
-
-  const activeSteps = STEPS.filter(s => s.id !== "tipo" || step === 0);
 
   const renderStep = () => {
     switch (step) {
@@ -312,18 +311,13 @@ export default function IUBTerramatch() {
                   ? "Soy propietario o inmobiliaria y quiero publicar un inmueble"
                   : "Soy empresario o persona y necesito encontrar un local";
                 return (
-                  <button
-                    key={opt}
-                    onClick={() => set("modo")(opt)}
-                    style={{
-                      padding: 24, borderRadius: 12,
-                      border: `3px solid ${active ? "#CC0000" : "#E0E0E0"}`,
-                      background: active ? "#FFF5F5" : "#FAFAFA",
-                      cursor: "pointer", textAlign: "left",
-                      transition: "all 0.2s ease",
-                      boxShadow: active ? "0 4px 20px rgba(204,0,0,0.12)" : "none",
-                    }}
-                  >
+                  <button key={opt} onClick={() => set("modo")(opt)} style={{
+                    padding: 24, borderRadius: 12,
+                    border: `3px solid ${active ? "#CC0000" : "#E0E0E0"}`,
+                    background: active ? "#FFF5F5" : "#FAFAFA",
+                    cursor: "pointer", textAlign: "left", transition: "all 0.2s ease",
+                    boxShadow: active ? "0 4px 20px rgba(204,0,0,0.12)" : "none",
+                  }}>
                     <div style={{ fontSize: 32, marginBottom: 10 }}>{icon}</div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: active ? "#CC0000" : "#1A1A2E", fontFamily: "'DM Serif Display', serif", marginBottom: 8 }}>{opt}</div>
                     <div style={{ fontSize: 12, color: "#777", lineHeight: 1.4 }}>{desc}</div>
@@ -334,7 +328,6 @@ export default function IUBTerramatch() {
             </div>
           </div>
         );
-
       case 1:
         return (
           <div>
@@ -351,15 +344,12 @@ export default function IUBTerramatch() {
             </TwoCol>
             <Field label="Email" value={data.email} onChange={set("email")} type="email" required />
             <Field label="Ciudad Principal" value={data.ciudad} onChange={set("ciudad")} />
-            {isBusco && <>
-              <TwoCol>
-                <Field label="Cantidad de Locales" value={data.cantidadLocales} onChange={set("cantidadLocales")} note="¿Cuántos locales busca?" />
-                <Field label="Actividad / Uso del Negocio" value={data.actividadNegocio} onChange={set("actividadNegocio")} note="Ej: restaurante, boutique…" />
-              </TwoCol>
-            </>}
+            {isBusco && <TwoCol>
+              <Field label="Cantidad de Locales" value={data.cantidadLocales} onChange={set("cantidadLocales")} note="¿Cuántos locales busca?" />
+              <Field label="Actividad / Uso del Negocio" value={data.actividadNegocio} onChange={set("actividadNegocio")} note="Ej: restaurante, boutique…" />
+            </TwoCol>}
           </div>
         );
-
       case 2:
         return (
           <div>
@@ -378,7 +368,6 @@ export default function IUBTerramatch() {
             </>}
           </div>
         );
-
       case 3:
         return (
           <div>
@@ -401,7 +390,6 @@ export default function IUBTerramatch() {
               options={["Extracción", "Cocina industrial", "Refrigeración", "Carga eléctrica reforzada", "Gas natural"]} />}
           </div>
         );
-
       case 4:
         return (
           <div>
@@ -427,7 +415,6 @@ export default function IUBTerramatch() {
               options={["3 años", "5 años", "10 años", "Más de 10", "Negociación abierta"]} />
           </div>
         );
-
       case 5:
         return (
           <div>
@@ -443,16 +430,12 @@ export default function IUBTerramatch() {
             <TextArea label="Observaciones Adicionales" value={data.observaciones} onChange={set("observaciones")} placeholder="Cualquier detalle importante no contemplado en el formulario…" />
           </div>
         );
-
       case 6:
         return <Resumen data={data} onReset={() => { setData(initialData); setStep(0); }} />;
-
       default:
         return null;
     }
   };
-
-  const visibleSteps = step === 0 ? STEPS : STEPS.slice(1);
 
   return (
     <>
@@ -467,8 +450,6 @@ export default function IUBTerramatch() {
         ::-webkit-scrollbar-thumb { background: #CCC; border-radius: 2px; }
       `}</style>
       <div style={{ minHeight: "100vh", background: "linear-gradient(160deg, #F0F0F4 0%, #E8E8EE 100%)", fontFamily: "'DM Sans', sans-serif", padding: "0 0 40px" }}>
-
-        {/* TOP BAR */}
         <div style={{ background: "#1A1A2E", padding: "0 24px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 52 }}>
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <span style={{ fontSize: 18, fontWeight: 800, color: "#CC0000", fontFamily: "'DM Serif Display', serif", letterSpacing: "-0.02em" }}>terramatch</span>
@@ -479,15 +460,11 @@ export default function IUBTerramatch() {
             {data.modo === "Busco Locales" ? "🔍" : "🏪"} {data.modo.toUpperCase()}
           </div>}
         </div>
-
-        {/* PROGRESS BAR */}
         {step > 0 && (
           <div style={{ background: "#FFF", borderBottom: "1px solid #E8E8E8", padding: "0 24px" }}>
             <div style={{ display: "flex", maxWidth: 720, margin: "0 auto" }}>
               {STEPS.slice(1).map((s, i) => {
-                const idx = i + 1;
-                const done = step > idx;
-                const active = step === idx;
+                const idx = i + 1; const done = step > idx; const active = step === idx;
                 return (
                   <div key={s.id} onClick={() => done && setStep(idx)}
                     style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: done ? "pointer" : "default", position: "relative" }}>
@@ -501,8 +478,6 @@ export default function IUBTerramatch() {
             </div>
           </div>
         )}
-
-        {/* MAIN CARD */}
         <div style={{ maxWidth: 720, margin: "32px auto 0", padding: "0 16px" }}>
           {step === 0 && (
             <div style={{ textAlign: "center", marginBottom: 32 }}>
@@ -514,48 +489,20 @@ export default function IUBTerramatch() {
               </p>
             </div>
           )}
-
           <div style={{ background: "#FFF", borderRadius: 16, padding: 28, boxShadow: "0 4px 32px rgba(0,0,0,0.06)", border: "1px solid #E8E8E8" }}>
             {renderStep()}
-
             {step < 6 && (
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 24, paddingTop: 20, borderTop: "1px solid #F0F0F0" }}>
-                <button
-                  onClick={() => setStep(s => Math.max(0, s - 1))}
-                  style={{
-                    padding: "10px 20px", background: step === 0 ? "transparent" : "#F0F0F0",
-                    color: "#555", border: "none", borderRadius: 8, fontSize: 13,
-                    cursor: step === 0 ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif",
-                    opacity: step === 0 ? 0 : 1,
-                  }}
-                >
+                <button onClick={() => setStep(s => Math.max(0, s - 1))} style={{ padding: "10px 20px", background: step === 0 ? "transparent" : "#F0F0F0", color: "#555", border: "none", borderRadius: 8, fontSize: 13, cursor: step === 0 ? "default" : "pointer", fontFamily: "'DM Sans', sans-serif", opacity: step === 0 ? 0 : 1 }}>
                   ← Anterior
                 </button>
-
-                <div style={{ fontSize: 12, color: "#BBB" }}>
-                  {step > 0 ? `Paso ${step} de ${STEPS.length - 1}` : ""}
-                </div>
-
-                <button
-                  onClick={() => canNext() && setStep(s => s + 1)}
-                  disabled={!canNext()}
-                  style={{
-                    padding: "11px 28px",
-                    background: canNext() ? "linear-gradient(135deg, #CC0000, #990000)" : "#E0E0E0",
-                    color: canNext() ? "#FFF" : "#AAA",
-                    border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700,
-                    cursor: canNext() ? "pointer" : "not-allowed",
-                    fontFamily: "'DM Sans', sans-serif",
-                    letterSpacing: "0.05em",
-                    transition: "all 0.2s",
-                  }}
-                >
+                <div style={{ fontSize: 12, color: "#BBB" }}>{step > 0 ? `Paso ${step} de ${STEPS.length - 1}` : ""}</div>
+                <button onClick={() => canNext() && setStep(s => s + 1)} disabled={!canNext()} style={{ padding: "11px 28px", background: canNext() ? "linear-gradient(135deg, #CC0000, #990000)" : "#E0E0E0", color: canNext() ? "#FFF" : "#AAA", border: "none", borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: canNext() ? "pointer" : "not-allowed", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em", transition: "all 0.2s" }}>
                   {step === 5 ? "Ver Resumen →" : "Continuar →"}
                 </button>
               </div>
             )}
           </div>
-
           <div style={{ textAlign: "center", marginTop: 20, fontSize: 11, color: "#BBB" }}>
             terramatch · NIT 901.612.770-8 · Bogotá, Colombia · Documento confidencial
           </div>
@@ -564,4 +511,3 @@ export default function IUBTerramatch() {
     </>
   );
 }
-
