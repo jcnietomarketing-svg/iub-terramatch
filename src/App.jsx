@@ -227,7 +227,35 @@ const Resumen = ({ data, onReset }) => {
       </div>
       <div style={{ display: "flex", gap: 12 }}>
         <button
-          onClick={() => alert("En un repositorio real, aquí se envía a un backend o Google Sheets via API.")}
+          onClick={async () => {
+  try {
+    await fetch("https://script.google.com/macros/s/AKfycbwqRYuPU5wldokSFClKauyyaOD1_aPw3uOARM12jP_c7e08RWTfgHWalOQByfgcY_o1/exec", {
+      method: "POST",
+      body: JSON.stringify(data),
+    });
+    alert("✅ IUB enviado correctamente. Revisa tu Google Sheets.");
+  } catch (err) {
+    alert("❌ Error al enviar. Intenta de nuevo.");
+  }
+}}
+```
+
+Guarda el archivo con **Ctrl + S**.
+
+---
+
+**Sube el cambio a GitHub** — abre la terminal y escribe:
+```
+cd %USERPROFILE%\Documents\iub-terramatch
+```
+```
+git add .
+```
+```
+git commit -m "conectar formulario con Google Sheets"
+```
+```
+git push
           style={{
             flex: 1, padding: "14px 0", background: "linear-gradient(135deg, #CC0000, #990000)",
             color: "#FFF", border: "none", borderRadius: 8, fontSize: 14,
