@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwqRYuPU5wldokSFClKauyyaOD1_aPw3uOARM12jP_c7e08RWTfgHWalOQByfgcY_o1/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJGxYaNFU2ZryYqDOOvVdNS3WkQeqAMqPDdyVGupG9_GEymwgcXRKR7oji7TOOuGv_xg/exec";
 
 const STEPS = [
   { id: "tipo", label: "Tipo", icon: "⚡" },
