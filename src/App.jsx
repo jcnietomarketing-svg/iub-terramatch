@@ -166,10 +166,13 @@ const Resumen = ({ data, onReset }) => {
   const enviar = async () => {
     setEnviando(true);
     try {
+      const params = new URLSearchParams();
+      params.append("data", JSON.stringify(data));
       await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        body: (() => { const f = new FormData(); f.append("data", JSON.stringify(data)); return f; })(),
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params.toString(),
       });
       setEnviado(true);
     } catch (err) {
@@ -223,14 +226,7 @@ const Resumen = ({ data, onReset }) => {
         <p style={{ color: "#888", fontSize: 12, marginBottom: 32 }}>
           Revisa tu bandeja de entrada en Gmail.
         </p>
-        <button
-          onClick={onReset}
-          style={{
-            padding: "12px 32px", background: "linear-gradient(135deg, #CC0000, #990000)",
-            color: "#FFF", border: "none", borderRadius: 8, fontSize: 14,
-            fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
+        <button onClick={onReset} style={{ padding: "12px 32px", background: "linear-gradient(135deg, #CC0000, #990000)", color: "#FFF", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           Diligenciar otro IUB
         </button>
       </div>
@@ -242,39 +238,17 @@ const Resumen = ({ data, onReset }) => {
       <SectionTitle icon="✅" title="RESUMEN DEL IUB" subtitle="Revisa la información antes de enviar" color="#1A1A2E" />
       <div style={{ background: "#F9F9F9", borderRadius: 10, border: "1px solid #E8E8E8", overflow: "hidden", marginBottom: 20 }}>
         {rows.map(([k, v], i) => (
-          <div key={k} style={{
-            display: "grid", gridTemplateColumns: "200px 1fr",
-            padding: "10px 16px",
-            background: i % 2 === 0 ? "#FFF" : "#F9F9F9",
-            borderBottom: "1px solid #F0F0F0", alignItems: "start"
-          }}>
+          <div key={k} style={{ display: "grid", gridTemplateColumns: "200px 1fr", padding: "10px 16px", background: i % 2 === 0 ? "#FFF" : "#F9F9F9", borderBottom: "1px solid #F0F0F0", alignItems: "start" }}>
             <div style={{ fontSize: 11, fontWeight: 700, color: k.startsWith("⚑") ? "#8B5E00" : "#888", textTransform: "uppercase", letterSpacing: "0.06em", paddingRight: 8 }}>{k}</div>
             <div style={{ fontSize: 13, color: "#1A1A2E" }}>{v}</div>
           </div>
         ))}
       </div>
       <div style={{ display: "flex", gap: 12 }}>
-        <button
-          onClick={enviar}
-          disabled={enviando}
-          style={{
-            flex: 1, padding: "14px 0",
-            background: enviando ? "#AAA" : "linear-gradient(135deg, #CC0000, #990000)",
-            color: "#FFF", border: "none", borderRadius: 8, fontSize: 14,
-            fontWeight: 700, cursor: enviando ? "not-allowed" : "pointer",
-            fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em",
-          }}
-        >
+        <button onClick={enviar} disabled={enviando} style={{ flex: 1, padding: "14px 0", background: enviando ? "#AAA" : "linear-gradient(135deg, #CC0000, #990000)", color: "#FFF", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: enviando ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em" }}>
           {enviando ? "Enviando..." : "ENVIAR IUB ✓"}
         </button>
-        <button
-          onClick={onReset}
-          style={{
-            padding: "14px 20px", background: "#F0F0F0",
-            color: "#555", border: "none", borderRadius: 8, fontSize: 13,
-            cursor: "pointer", fontFamily: "'DM Sans', sans-serif",
-          }}
-        >
+        <button onClick={onReset} style={{ padding: "14px 20px", background: "#F0F0F0", color: "#555", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
           Nuevo
         </button>
       </div>
@@ -306,17 +280,9 @@ export default function IUBTerramatch() {
               {["Tengo Locales", "Busco Locales"].map(opt => {
                 const active = data.modo === opt;
                 const icon = opt === "Tengo Locales" ? "🏪" : "🔍";
-                const desc = opt === "Tengo Locales"
-                  ? "Soy propietario o inmobiliaria y quiero publicar un inmueble"
-                  : "Soy empresario o persona y necesito encontrar un local";
+                const desc = opt === "Tengo Locales" ? "Soy propietario o inmobiliaria y quiero publicar un inmueble" : "Soy empresario o persona y necesito encontrar un local";
                 return (
-                  <button key={opt} onClick={() => set("modo")(opt)} style={{
-                    padding: 24, borderRadius: 12,
-                    border: `3px solid ${active ? "#CC0000" : "#E0E0E0"}`,
-                    background: active ? "#FFF5F5" : "#FAFAFA",
-                    cursor: "pointer", textAlign: "left", transition: "all 0.2s ease",
-                    boxShadow: active ? "0 4px 20px rgba(204,0,0,0.12)" : "none",
-                  }}>
+                  <button key={opt} onClick={() => set("modo")(opt)} style={{ padding: 24, borderRadius: 12, border: `3px solid ${active ? "#CC0000" : "#E0E0E0"}`, background: active ? "#FFF5F5" : "#FAFAFA", cursor: "pointer", textAlign: "left", transition: "all 0.2s ease", boxShadow: active ? "0 4px 20px rgba(204,0,0,0.12)" : "none" }}>
                     <div style={{ fontSize: 32, marginBottom: 10 }}>{icon}</div>
                     <div style={{ fontSize: 15, fontWeight: 800, color: active ? "#CC0000" : "#1A1A2E", fontFamily: "'DM Serif Display', serif", marginBottom: 8 }}>{opt}</div>
                     <div style={{ fontSize: 12, color: "#777", lineHeight: 1.4 }}>{desc}</div>
@@ -358,12 +324,10 @@ export default function IUBTerramatch() {
             {isBusco ? <>
               <Field label="Zonas / Sectores aceptables" value={data.zonasAceptables} onChange={set("zonasAceptables")} />
               <Field label="Sectores NO aceptados" value={data.zonasNoAceptadas} onChange={set("zonasNoAceptadas")} />
-              <CheckGroup label="Accesos requeridos" value={data.accesosRequeridos} onChange={set("accesosRequeridos")} color="#CC0000"
-                options={["Vía principal", "Doble calzada", "Centro Comercial", "Isla", "Plazoleta de comidas", "Parking propio"]} />
+              <CheckGroup label="Accesos requeridos" value={data.accesosRequeridos} onChange={set("accesosRequeridos")} color="#CC0000" options={["Vía principal", "Doble calzada", "Centro Comercial", "Isla", "Plazoleta de comidas", "Parking propio"]} />
             </> : <>
               <Field label="Dirección del Inmueble" value={data.zonasAceptables} onChange={set("zonasAceptables")} />
-              <RadioGroup label="Permiso de Construcción" value={data.permisoConstructura} onChange={set("permisoConstructura")} color="#CC0000"
-                options={["Sí cuenta", "No cuenta", "En trámite"]} />
+              <RadioGroup label="Permiso de Construcción" value={data.permisoConstructura} onChange={set("permisoConstructura")} color="#CC0000" options={["Sí cuenta", "No cuenta", "En trámite"]} />
             </>}
           </div>
         );
@@ -371,10 +335,8 @@ export default function IUBTerramatch() {
         return (
           <div>
             <SectionTitle icon="🏢" title="CARACTERÍSTICAS DEL INMUEBLE" color="#2C3E6B" />
-            <RadioGroup label="Tipo de Negocio" value={data.tipoNegocio} onChange={set("tipoNegocio")} color="#2C3E6B"
-              options={["Arriendo", "Venta", "Leasing comercial"]} />
-            <CheckGroup label="Uso del Suelo" value={data.usoSuelo} onChange={set("usoSuelo")} color="#2C3E6B"
-              options={["Mixto", "Comercial", "Industrial", "Residencial"]} />
+            <RadioGroup label="Tipo de Negocio" value={data.tipoNegocio} onChange={set("tipoNegocio")} color="#2C3E6B" options={["Arriendo", "Venta", "Leasing comercial"]} />
+            <CheckGroup label="Uso del Suelo" value={data.usoSuelo} onChange={set("usoSuelo")} color="#2C3E6B" options={["Mixto", "Comercial", "Industrial", "Residencial"]} />
             <TwoCol>
               <Field label={isBusco ? "Área mínima (m²)" : "Área Total (m²)"} value={data.areaTotalMin} onChange={set("areaTotalMin")} type="number" />
               <Field label={isBusco ? "Área máxima (m²)" : "Área Construida (m²)"} value={data.areaTotalMax} onChange={set("areaTotalMax")} type="number" />
@@ -383,10 +345,8 @@ export default function IUBTerramatch() {
               <Field label="Altura Libre Mínima (m)" value={data.alturaLibre} onChange={set("alturaLibre")} />
               <Field label="Parqueaderos mínimos" value={data.parqueaderos} onChange={set("parqueaderos")} />
             </TwoCol>
-            <CheckGroup label="Características Especiales" value={data.caracteristicas} onChange={set("caracteristicas")} color="#2C3E6B"
-              options={["Esquinero", "Vía Principal", "Vía Secundaria", "Doble Altura", "Mezzanine", "Terraza / Patio", "Sótano", "Doble Frente"]} />
-            {isBusco && <CheckGroup label="Instalaciones Requeridas" value={data.instalaciones} onChange={set("instalaciones")} color="#2C3E6B"
-              options={["Extracción", "Cocina industrial", "Refrigeración", "Carga eléctrica reforzada", "Gas natural"]} />}
+            <CheckGroup label="Características Especiales" value={data.caracteristicas} onChange={set("caracteristicas")} color="#2C3E6B" options={["Esquinero", "Vía Principal", "Vía Secundaria", "Doble Altura", "Mezzanine", "Terraza / Patio", "Sótano", "Doble Frente"]} />
+            {isBusco && <CheckGroup label="Instalaciones Requeridas" value={data.instalaciones} onChange={set("instalaciones")} color="#2C3E6B" options={["Extracción", "Cocina industrial", "Refrigeración", "Carga eléctrica reforzada", "Gas natural"]} />}
           </div>
         );
       case 4:
@@ -399,32 +359,27 @@ export default function IUBTerramatch() {
                 <Field label="Canon mensual máximo ($)" value={data.canonMaximo} onChange={set("canonMaximo")} placeholder="$ 0" />
               </TwoCol>
               <Field label="Administración mensual máxima ($)" value={data.adminMaxima} onChange={set("adminMaxima")} placeholder="$ 0" />
-              <RadioGroup label="Financiación" value={data.financiacion} onChange={set("financiacion")} color="#4A4A6A"
-                options={["Ya aprobada", "En trámite", "No requiere"]} />
+              <RadioGroup label="Financiación" value={data.financiacion} onChange={set("financiacion")} color="#4A4A6A" options={["Ya aprobada", "En trámite", "No requiere"]} />
             </> : <>
               <TwoCol>
                 <Field label="Precio de Venta ($) / Precio m²" value={data.precioVenta} onChange={set("precioVenta")} placeholder="$ 0" />
                 <Field label="Canon de Arriendo mensual ($)" value={data.canonArriendo} onChange={set("canonArriendo")} placeholder="$ 0" />
               </TwoCol>
               <Field label="Administración mensual ($)" value={data.adminMensual} onChange={set("adminMensual")} placeholder="$ 0" />
-              <CheckGroup label="Documentos Disponibles" value={data.documentos} onChange={set("documentos")} color="#4A4A6A"
-                options={["Fotos", "PDF planos", "JPG", "DWG / CAD", "Escritura"]} />
+              <CheckGroup label="Documentos Disponibles" value={data.documentos} onChange={set("documentos")} color="#4A4A6A" options={["Fotos", "PDF planos", "JPG", "DWG / CAD", "Escritura"]} />
             </>}
-            <CheckGroup label="Plazo del Contrato (años)" value={data.plazoContrato} onChange={set("plazoContrato")} color="#4A4A6A"
-              options={["3 años", "5 años", "10 años", "Más de 10", "Negociación abierta"]} />
+            <CheckGroup label="Plazo del Contrato (años)" value={data.plazoContrato} onChange={set("plazoContrato")} color="#4A4A6A" options={["3 años", "5 años", "10 años", "Más de 10", "Negociación abierta"]} />
           </div>
         );
       case 5:
         return (
           <div>
             <KeySection>
-              <RadioGroup label="Plazo para tomar la decisión" value={data.plazoDecision} onChange={set("plazoDecision")} color="#E8A020"
-                options={["Inmediato (0–1 mes)", "Corto (1–3 meses)", "Mediano (3–6 meses)", "Largo (+6 meses)"]} highlight />
+              <RadioGroup label="Plazo para tomar la decisión" value={data.plazoDecision} onChange={set("plazoDecision")} color="#E8A020" options={["Inmediato (0–1 mes)", "Corto (1–3 meses)", "Mediano (3–6 meses)", "Largo (+6 meses)"]} highlight />
               <Field label="Fecha estimada de cierre del negocio" value={data.fechaCierre} onChange={set("fechaCierre")} type="date" />
               <Field label="¿Qué condición aceleraría la decisión?" value={data.acelerador} onChange={set("acelerador")} placeholder="Ej: encontrar el área exacta, precio dentro del presupuesto…" />
               <Field label="¿Qué podría retrasar o cancelar la búsqueda?" value={data.bloqueador} onChange={set("bloqueador")} placeholder="Ej: situación financiera pendiente, expansión condicionada…" />
-              {isBusco && <RadioGroup label="¿Revisa otras opciones en paralelo?" value={data.gestionParalela} onChange={set("gestionParalela")} color="#E8A020"
-                options={["No, gestión exclusiva Terramatch", "Sí, con otros gestores", "Sí, directamente con propietarios"]} highlight />}
+              {isBusco && <RadioGroup label="¿Revisa otras opciones en paralelo?" value={data.gestionParalela} onChange={set("gestionParalela")} color="#E8A020" options={["No, gestión exclusiva Terramatch", "Sí, con otros gestores", "Sí, directamente con propietarios"]} highlight />}
             </KeySection>
             <TextArea label="Observaciones Adicionales" value={data.observaciones} onChange={set("observaciones")} placeholder="Cualquier detalle importante no contemplado en el formulario…" />
           </div>
@@ -465,8 +420,7 @@ export default function IUBTerramatch() {
               {STEPS.slice(1).map((s, i) => {
                 const idx = i + 1; const done = step > idx; const active = step === idx;
                 return (
-                  <div key={s.id} onClick={() => done && setStep(idx)}
-                    style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: done ? "pointer" : "default", position: "relative" }}>
+                  <div key={s.id} onClick={() => done && setStep(idx)} style={{ flex: 1, padding: "10px 4px", textAlign: "center", cursor: done ? "pointer" : "default", position: "relative" }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: active ? "#CC0000" : done ? "#4CAF50" : "#BBB", textTransform: "uppercase", letterSpacing: "0.06em" }}>
                       {done ? "✓ " : ""}{s.label}
                     </div>
