@@ -166,13 +166,11 @@ const Resumen = ({ data, onReset }) => {
   const enviar = async () => {
     setEnviando(true);
     try {
-      const params = new URLSearchParams();
-      params.append("data", JSON.stringify(data));
       await fetch(SCRIPT_URL, {
         method: "POST",
         mode: "no-cors",
-        headers: { "Content-Type": "application/x-www-form-urlencoded" },
-        body: params.toString(),
+        headers: { "Content-Type": "text/plain" },
+        body: JSON.stringify(data),
       });
       setEnviado(true);
     } catch (err) {
