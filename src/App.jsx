@@ -159,9 +159,49 @@ const KeySection = ({ children }) => (
   </div>
 );
 
+const TERMINOS = `TÉRMINOS Y CONDICIONES — TERRAMATCH
+
+¡Bienvenido a TerraMatch! Estos términos y condiciones describen la relación contractual entre TERRAMATCH S.A.S., NIT 901.612.770-8 ("TerraMatch") y Tú, nuestro Usuario.
+
+¿QUÉ ES TERRAMATCH?
+TerraMatch es una plataforma web inteligente que conecta Usuarios que quieran arrendar o vender un local comercial, con Usuarios que quieran tomarlo en arriendo o comprarlo.
+
+CONTRAPRESTACIÓN
+• Arrendamiento: 30% sobre el valor del primer canon de arrendamiento.
+• Compraventa: 30% sobre el 3% del valor total de venta del inmueble.
+• Si eres arrendatario o comprador, no pagas nada a TerraMatch.
+• TerraMatch solo cobra si se cierra la negociación.
+
+CUENTA BANCARIA TERRAMATCH
+Iris Bank · Cuenta de Ahorros 100012022193 · NIT 901.612.770-8
+
+OBLIGACIONES DEL USUARIO
+• Atender obligaciones legales y tributarias.
+• Tener capacidad legal para ofrecer el Local.
+• Llenar los formularios con información cierta y fidedigna.
+• Permitir que TerraMatch acceda al Local para coordinar visitas.
+• Responder directamente ante los demás Usuarios por los contratos celebrados.
+
+RESPONSABILIDAD
+TerraMatch no garantiza que habrá un Match ni que se celebrará un contrato. En cualquier caso, la responsabilidad de TerraMatch se limitará a COP$1.000.000.
+
+DATOS PERSONALES
+TerraMatch tratará tus datos conforme a su Política de Privacidad y la Ley 1581 de 2012. Tu información será confidencial hasta que se firme el contrato.
+
+CONTROVERSIAS
+Las controversias se someterán a arreglo directo por 30 días. De no resolverse, serán conocidas por los jueces ordinarios de Colombia.
+
+NOTIFICACIONES
+TerraMatch: locales@terramatch.net
+Tú: al correo y/o celular registrado en el formulario.
+
+Última modificación: agosto 2023`;
+
 const Resumen = ({ data, onReset }) => {
   const [enviando, setEnviando] = useState(false);
   const [enviado, setEnviado] = useState(false);
+  const [aceptado, setAceptado] = useState(false);
+  const [verTerminos, setVerTerminos] = useState(false);
 
   const enviar = async () => {
     setEnviando(true);
@@ -242,8 +282,33 @@ const Resumen = ({ data, onReset }) => {
           </div>
         ))}
       </div>
+      {/* TÉRMINOS Y CONDICIONES */}
+      <div style={{ background: "#F9F9F9", border: "1px solid #E8E8E8", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: verTerminos ? 12 : 0 }}>
+          <div style={{ fontSize: 12, fontWeight: 700, color: "#1A1A2E", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            📄 Términos y Condiciones Terramatch
+          </div>
+          <button onClick={() => setVerTerminos(!verTerminos)} style={{ fontSize: 11, color: "#CC0000", fontWeight: 700, background: "none", border: "none", cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
+            {verTerminos ? "Ocultar ▲" : "Leer ▼"}
+          </button>
+        </div>
+        {verTerminos && (
+          <div style={{ maxHeight: 220, overflowY: "auto", background: "#FFF", border: "1px solid #E0E0E0", borderRadius: 6, padding: 12, marginBottom: 12, fontSize: 11, color: "#444", lineHeight: 1.7, whiteSpace: "pre-wrap", fontFamily: "'DM Sans', sans-serif" }}>
+            {TERMINOS}
+          </div>
+        )}
+        <div style={{ display: "flex", alignItems: "flex-start", gap: 10, marginTop: 10, cursor: "pointer" }} onClick={() => setAceptado(!aceptado)}>
+          <div style={{ width: 18, height: 18, minWidth: 18, borderRadius: 4, border: `2px solid ${aceptado ? "#CC0000" : "#BBB"}`, background: aceptado ? "#CC0000" : "#FFF", display: "flex", alignItems: "center", justifyContent: "center", marginTop: 1 }}>
+            {aceptado && <span style={{ color: "#FFF", fontSize: 11, fontWeight: 900 }}>✓</span>}
+          </div>
+          <span style={{ fontSize: 12, color: "#444", lineHeight: 1.5 }}>
+            He leído y acepto los <span style={{ color: "#CC0000", fontWeight: 700 }}>Términos y Condiciones de Terramatch</span>, incluyendo la política de tratamiento de datos personales conforme a la Ley 1581 de 2012.
+          </span>
+        </div>
+      </div>
+
       <div style={{ display: "flex", gap: 12 }}>
-        <button onClick={enviar} disabled={enviando} style={{ flex: 1, padding: "14px 0", background: enviando ? "#AAA" : "linear-gradient(135deg, #CC0000, #990000)", color: "#FFF", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: enviando ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em" }}>
+        <button onClick={enviar} disabled={enviando || !aceptado} style={{ flex: 1, padding: "14px 0", background: enviando || !aceptado ? "#CCC" : "linear-gradient(135deg, #CC0000, #990000)", color: "#FFF", border: "none", borderRadius: 8, fontSize: 14, fontWeight: 700, cursor: enviando || !aceptado ? "not-allowed" : "pointer", fontFamily: "'DM Sans', sans-serif", letterSpacing: "0.05em" }}>
           {enviando ? "Enviando..." : "ENVIAR IUB ✓"}
         </button>
         <button onClick={onReset} style={{ padding: "14px 20px", background: "#F0F0F0", color: "#555", border: "none", borderRadius: 8, fontSize: 13, cursor: "pointer", fontFamily: "'DM Sans', sans-serif" }}>
