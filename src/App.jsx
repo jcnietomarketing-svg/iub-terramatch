@@ -115,10 +115,48 @@ export default function App() {
         {view === 'admin' && user && isAdmin && <AdminPanel supabase={supabase} onNavigate={setView} setSelectedItem={setSelectedItem} />}
       </main>
 
-      <footer style={{ background: THEME.colors.dark, color: 'white', padding: '40px 32px', marginTop: '60px' }}>
-        <div style={{ maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
-          <Logo size={120} />
-          <p style={{ fontSize: '0.8rem', opacity: 0.6, marginTop: '16px' }}>© 2026 TerraMatch · NIT 901.612.770-8 · Bogotá, Colombia</p>
+      {/* FOOTER COMPLETO RESTAURADO */}
+      <footer style={{ background: THEME.colors.dark, color: 'white', padding: '60px 32px 30px' }}>
+        <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', marginBottom: '40px' }}>
+            <div>
+              <Logo size={140} />
+              <p style={{ fontSize: '0.9rem', opacity: 0.7, marginTop: '16px', lineHeight: 1.6 }}>La mayor comunidad de búsqueda inteligente de inmuebles comerciales en LATAM.</p>
+            </div>
+            <div>
+              <h4 style={{ fontSize: '1rem', marginBottom: '16px', color: THEME.colors.secondary }}>Plataforma</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: '12px' }}><button onClick={() => setView('home')} style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Inicio</button></li>
+                <li style={{ marginBottom: '12px' }}><button onClick={() => { setSelectedCategory('locales'); setView('register'); }} style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Busco Locales</button></li>
+                <li style={{ marginBottom: '12px' }}><button onClick={() => { setSelectedCategory('bodegas'); setView('register'); }} style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Busco Bodegas</button></li>
+                <li style={{ marginBottom: '12px' }}><button onClick={() => { setSelectedCategory('oficinas'); setView('register'); }} style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Busco Oficinas</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 style={{ fontSize: '1rem', marginBottom: '16px', color: THEME.colors.secondary }}>Legal</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Términos y Condiciones</button></li>
+                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Política de Privacidad</button></li>
+                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Política de Cookies</button></li>
+              </ul>
+            </div>
+            <div>
+              <h4 style={{ fontSize: '1rem', marginBottom: '16px', color: THEME.colors.secondary }}>Contacto</h4>
+              <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+                <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}> contacto@terramatch.net</li>
+                <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}>📱 +57 300 000 0000</li>
+                <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}>📍 Bogotá, Colombia</li>
+              </ul>
+            </div>
+          </div>
+          <div style={{ borderTop: '1px solid rgba(255,255,255,0.1)', paddingTop: '24px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '16px' }}>
+            <p style={{ fontSize: '0.85rem', opacity: 0.6, margin: 0 }}>© 2026 TerraMatch · NIT 901.612.770-8 · Todos los derechos reservados</p>
+            <div style={{ display: 'flex', gap: '16px' }}>
+              <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}>📘</a>
+              <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}></a>
+              <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}>💼</a>
+            </div>
+          </div>
         </div>
       </footer>
     </div>
@@ -126,12 +164,11 @@ export default function App() {
 }
 
 // ==========================================
-// HOME VIEW CON TICKER ROTATIVO + 3 CATEGORÍAS + TERRAMAGIA
+// HOME VIEW (TICKER + 3 CATEGORÍAS + TERRAMAGIA)
 // ==========================================
 function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
   const [tickerIndex, setTickerIndex] = useState(0);
   
-  // Noticias rotativas: TerraMatch, Clima, TRM, Noticias externas
   const tickerItems = [
     { icon: '🔥', text: '3 nuevos matches en Bogotá hace 5 min', type: 'terramatch' },
     { icon: '🏪', text: 'Local en Chapinero arrendado en 48h', type: 'terramatch' },
@@ -140,13 +177,13 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
     { icon: '📈', text: '142 empresas buscando locales esta semana', type: 'terramatch' },
     { icon: '🏢', text: 'Nuevas oficinas disponibles en Zona T', type: 'noticia' },
     { icon: '🌦️', text: 'Medellín: 24°C · Lluvia ligera', type: 'clima' },
-    { icon: '', text: 'Sector inmobiliario crece 8% en 2026', type: 'noticia' },
+    { icon: '📰', text: 'Sector inmobiliario crece 8% en 2026', type: 'noticia' },
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setTickerIndex((prev) => (prev + 1) % tickerItems.length);
-    }, 4000); // Cambia cada 4 segundos
+    }, 4000);
     return () => clearInterval(interval);
   }, []);
 
@@ -177,7 +214,6 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
       {/* HERO SECTION */}
       <div style={{ position: 'relative', minHeight: '80vh', display: 'flex', alignItems: 'center', background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 100%), url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80') center/cover`, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '10%', right: '10%', width: '300px', height: '300px', border: `2px solid ${THEME.colors.secondary}`, borderRadius: '50%', opacity: 0.4 }}></div>
-        <div style={{ position: 'absolute', top: '15%', right: '15%', width: '200px', height: '200px', border: `2px solid ${THEME.colors.secondary}`, borderRadius: '50%', opacity: 0.6 }}></div>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 32px', textAlign: 'center', position: 'relative', zIndex: 1, width: '100%' }}>
           <div style={{ display: 'inline-block', background: `${THEME.colors.primary}15`, color: THEME.colors.primary, padding: '8px 20px', borderRadius: THEME.radius.full, fontSize: '0.9rem', fontWeight: 700, marginBottom: '24px' }}>La mayor comunidad de búsqueda inteligente</div>
           <h1 style={{ fontSize: 'clamp(2.5rem, 5vw, 4rem)', marginBottom: '24px', lineHeight: 1.1, margin: '0 0 24px 0', color: THEME.colors.text }}>Hagamos Match entre tu<br/><span style={{ color: THEME.colors.primary }}>Inmueble y el Negocio Perfecto</span></h1>
@@ -186,7 +222,7 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
         </div>
       </div>
 
-      {/* 3 CATEGORÍAS: LOCALES, BODEGAS, OFICINAS */}
+      {/* 3 CATEGORÍAS */}
       <div style={{ padding: '80px 32px', maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: THEME.colors.text }}>¿Qué tipo de inmueble necesitas?</h2>
         <p style={{ fontSize: '1.1rem', color: THEME.colors.textLight, marginBottom: '60px' }}>Elige tu categoría y deja que nuestro algoritmo haga el resto.</p>
@@ -205,7 +241,7 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
         </div>
       </div>
 
-      {/* SECCIÓN "CÓMO FUNCIONA LA TERRAMAGIA" */}
+      {/* TERRAMAGIA */}
       <div style={{ padding: '80px 32px', background: THEME.colors.white }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -317,9 +353,6 @@ function LoginView({ supabase, onSuccess, onNavigate }) {
   );
 }
 
-// ==========================================
-// DASHBOARD CON CARGA MASIVA
-// ==========================================
 function DashboardView({ user, profile, supabase, onNavigate, setSelectedItem, setSelectedCategory }) {
   const [tab, setTab] = useState('iubs');
   const [iubs, setIubs] = useState([]);
@@ -374,7 +407,7 @@ function DashboardView({ user, profile, supabase, onNavigate, setSelectedItem, s
         </div>
       ) : (
         <div style={{ background: THEME.colors.white, borderRadius: THEME.radius.md, boxShadow: THEME.shadow, overflow: 'hidden' }}>
-          {locales.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: THEME.colors.textLight }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}></div><h3>Aún no has publicado locales</h3><button onClick={() => onNavigate('oferta-wizard')} style={{ marginTop: '20px', padding: '12px 24px', background: THEME.colors.dark, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>Publicar mi primer local</button></div> : (
+          {locales.length === 0 ? <div style={{ padding: '60px', textAlign: 'center', color: THEME.colors.textLight }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}>🏪</div><h3>Aún no has publicado locales</h3><button onClick={() => onNavigate('oferta-wizard')} style={{ marginTop: '20px', padding: '12px 24px', background: THEME.colors.dark, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>Publicar mi primer local</button></div> : (
             <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
               <thead><tr style={{ background: '#f8f9fa', borderBottom: `2px solid #e2e8f0` }}><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CÓDIGO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>TÍTULO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CIUDAD</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ÁREA (M²)</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>PRECIO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>MATCHES</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ESTADO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ACCIÓN</th></tr></thead>
               <tbody>{locales.map((local) => (<tr key={local.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => { setSelectedItem(local); onNavigate('local-detail'); }}><td style={{ padding: '16px', fontFamily: 'monospace', fontWeight: 700, color: THEME.colors.primary }}>{local.codigo_propiedad || 'SIN ID'}</td><td style={{ padding: '16px', fontWeight: 600 }}>{local.titulo || 'Sin título'}</td><td style={{ padding: '16px' }}>{local.ciudad}</td><td style={{ padding: '16px' }}>{local.area_total} m²</td><td style={{ padding: '16px' }}>${local.precio?.toLocaleString()}</td><td style={{ padding: '16px' }}><Badge color="primary">{matchCounts.props[local.id] || 0}</Badge></td><td style={{ padding: '16px' }}><Badge color={local.disponible ? 'success' : 'gray'}>{local.disponible ? 'Disponible' : 'No disponible'}</Badge></td><td style={{ padding: '16px' }}><button style={{ background: 'none', border: 'none', color: THEME.colors.primary, fontWeight: 700, cursor: 'pointer' }}>Ver IUBs →</button></td></tr>))}</tbody>
@@ -386,9 +419,6 @@ function DashboardView({ user, profile, supabase, onNavigate, setSelectedItem, s
   );
 }
 
-// ==========================================
-// WIZARD IUB (con categoría)
-// ==========================================
 function IUBWizard({ user, profile, supabase, category, onNavigate }) {
   const [step, setStep] = useState(1);
   const [loading, setLoading] = useState(false);
@@ -458,7 +488,7 @@ function IUBWizard({ user, profile, supabase, category, onNavigate }) {
 
         {step === 2 && (
           <div>
-            <h3 style={{ color: THEME.colors.primary, marginBottom: '24px' }}>📍 2. Ubicación y Características</h3>
+            <h3 style={{ color: THEME.colors.primary, marginBottom: '24px' }}> 2. Ubicación y Características</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div><label style={labelStyle}>Barrio / Zona preferida</label><input value={form.barrio} onChange={e => update('barrio', e.target.value)} style={inputStyle} /></div>
               <div><label style={labelStyle}>Zona</label><select value={form.zona} onChange={e => update('zona', e.target.value)} style={inputStyle}><option>Norte</option><option>Sur</option><option>Centro</option></select></div>
@@ -628,9 +658,6 @@ function OfertaWizard({ user, profile, supabase, category, onNavigate }) {
   );
 }
 
-// ==========================================
-// WIZARD CARGA MASIVA
-// ==========================================
 function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
   const [archivo, setArchivo] = useState(null);
   const [preview, setPreview] = useState([]);
@@ -642,7 +669,6 @@ function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
     const file = e.target.files[0];
     if (file) {
       setArchivo(file);
-      // Simular preview de primeras 3 filas
       setPreview([
         { titulo: 'Local 1 - Chapinero', ciudad: 'Bogotá', area: 120, precio: 5000000 },
         { titulo: 'Local 2 - Usaquén', ciudad: 'Bogotá', area: 85, precio: 3500000 },
@@ -655,7 +681,6 @@ function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
     if (!archivo) { alert('Por favor selecciona un archivo'); return; }
     setLoading(true);
     try {
-      // Simular carga masiva - en producción parsear el Excel
       const resultados = [];
       for (let i = 0; i < preview.length; i++) {
         const codigoProp = `LOC${Math.floor(Math.random() * 900000) + 100000}`;
@@ -677,13 +702,13 @@ function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
     <div style={{ padding: '40px 32px', maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ background: THEME.colors.white, padding: '48px', borderRadius: THEME.radius.lg, boxShadow: THEME.shadow }}>
         <div style={{ fontSize: '0.9rem', color: THEME.colors.textLight, marginBottom: '24px' }}><button onClick={() => onNavigate('dashboard')} style={{ background: 'none', border: 'none', color: THEME.colors.primary, cursor: 'pointer', padding: 0 }}>Dashboard</button><span style={{ margin: '0 8px' }}>&gt;</span><span>Carga Masiva - {categoriaLabels[category]}</span></div>
-        <h2 style={{ textAlign: 'center', marginBottom: '16px' }}>📊 Carga Masiva de {categoriaLabels[category]}</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '16px' }}> Carga Masiva de {categoriaLabels[category]}</h2>
         <p style={{ textAlign: 'center', color: THEME.colors.textLight, marginBottom: '32px' }}>Sube un archivo Excel o CSV con múltiples inmuebles</p>
 
         <div onClick={() => document.getElementById('masiva-upload').click()} style={{ border: '3px dashed #e2e8f0', borderRadius: THEME.radius.lg, padding: '60px 32px', textAlign: 'center', cursor: 'pointer', background: '#f8f9fa', transition: 'all 0.2s' }}
              onMouseEnter={(e) => { e.currentTarget.style.borderColor = THEME.colors.primary; e.currentTarget.style.background = `${THEME.colors.primary}05`; }}
              onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e2e8f0'; e.currentTarget.style.background = '#f8f9fa'; }}>
-          <div style={{ fontSize: '4rem', marginBottom: '16px' }}></div>
+          <div style={{ fontSize: '4rem', marginBottom: '16px' }}>📂</div>
           <h3 style={{ margin: '0 0 8px 0', color: THEME.colors.text }}>Arrastra tu archivo Excel o CSV aquí</h3>
           <p style={{ margin: 0, color: THEME.colors.textLight }}>o haz clic para seleccionar (máx. 10MB)</p>
           <input id="masiva-upload" type="file" accept=".xlsx,.xls,.csv" style={{ display: 'none' }} onChange={handleFileChange} />
@@ -708,7 +733,7 @@ function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
             </div>
 
             <div style={{ background: `${THEME.colors.warning}15`, padding: '16px', borderRadius: THEME.radius.sm, marginBottom: '24px', fontSize: '0.9rem', color: THEME.colors.text }}>
-              ️ <strong>Nota:</strong> Asegúrate de que tu archivo tenga las columnas: Título, Ciudad, Zona, Dirección, Área, Precio, Matrícula
+              ⚠️ <strong>Nota:</strong> Asegúrate de que tu archivo tenga las columnas: Título, Ciudad, Zona, Dirección, Área, Precio, Matrícula
             </div>
           </div>
         )}
@@ -823,7 +848,7 @@ function LocalDetailView({ item, supabase, profile, onNavigate }) {
             <p style={{ margin: '0', color: THEME.colors.textLight }}>{item.direccion} · {item.ciudad}</p>
           </div>
           <div style={{ background: '#fff5f5', padding: '24px', borderRadius: THEME.radius.md, border: `1px solid ${THEME.colors.primary}30` }}>
-            <h4 style={{ color: THEME.colors.primary, marginTop: 0, marginBottom: '16px' }}> Contacto Propietario</h4>
+            <h4 style={{ color: THEME.colors.primary, marginTop: 0, marginBottom: '16px' }}>🔒 Contacto Propietario</h4>
             <p style={{ margin: '8px 0', fontWeight: 700, color: THEME.colors.text }}>{profile?.nombre}</p>
             <p style={{ margin: '8px 0', color: THEME.colors.textLight }}>📞 {profile?.celular}</p>
             <p style={{ margin: '8px 0', color: THEME.colors.textLight }}>✉️ {profile?.email}</p>
@@ -834,7 +859,7 @@ function LocalDetailView({ item, supabase, profile, onNavigate }) {
 
       <h3 style={{ color: THEME.colors.text, marginBottom: '24px' }}>Este local tiene {iubsInteresados.length} Matches (IUBs interesados)</h3>
       {loading ? <div style={{ textAlign: 'center', padding: '40px', color: THEME.colors.textLight }}>Cargando...</div> : iubsInteresados.length === 0 ? (
-        <div style={{ background: THEME.colors.white, padding: '60px', borderRadius: THEME.radius.lg, textAlign: 'center', boxShadow: THEME.shadow }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}></div><h3>Aún no hay IUBs interesados</h3></div>
+        <div style={{ background: THEME.colors.white, padding: '60px', borderRadius: THEME.radius.lg, textAlign: 'center', boxShadow: THEME.shadow }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div><h3>Aún no hay IUBs interesados</h3></div>
       ) : (
         <div style={{ background: THEME.colors.white, borderRadius: THEME.radius.md, boxShadow: THEME.shadow, overflow: 'hidden' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
@@ -920,3 +945,4 @@ function AdminPanel({ supabase, onNavigate, setSelectedItem }) {
     </div>
   );
 }
+// END OF FILE - Si ves esto, el archivo está completo.
