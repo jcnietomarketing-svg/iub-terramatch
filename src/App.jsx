@@ -115,7 +115,6 @@ export default function App() {
         {view === 'admin' && user && isAdmin && <AdminPanel supabase={supabase} onNavigate={setView} setSelectedItem={setSelectedItem} />}
       </main>
 
-      {/* FOOTER COMPLETO RESTAURADO */}
       <footer style={{ background: THEME.colors.dark, color: 'white', padding: '60px 32px 30px' }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '40px', marginBottom: '40px' }}>
@@ -143,7 +142,7 @@ export default function App() {
             <div>
               <h4 style={{ fontSize: '1rem', marginBottom: '16px', color: THEME.colors.secondary }}>Contacto</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}> contacto@terramatch.net</li>
+                <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}>✉️ contacto@terramatch.net</li>
                 <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}>📱 +57 300 000 0000</li>
                 <li style={{ marginBottom: '12px', fontSize: '0.9rem', opacity: 0.7 }}>📍 Bogotá, Colombia</li>
               </ul>
@@ -153,7 +152,7 @@ export default function App() {
             <p style={{ fontSize: '0.85rem', opacity: 0.6, margin: 0 }}>© 2026 TerraMatch · NIT 901.612.770-8 · Todos los derechos reservados</p>
             <div style={{ display: 'flex', gap: '16px' }}>
               <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}>📘</a>
-              <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}></a>
+              <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}>📸</a>
               <a href="#" style={{ color: 'white', opacity: 0.6, textDecoration: 'none', fontSize: '1.2rem' }}>💼</a>
             </div>
           </div>
@@ -163,9 +162,6 @@ export default function App() {
   );
 }
 
-// ==========================================
-// HOME VIEW (TICKER + 3 CATEGORÍAS + TERRAMAGIA)
-// ==========================================
 function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
   const [tickerIndex, setTickerIndex] = useState(0);
   
@@ -197,7 +193,6 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
 
   return (
     <div>
-      {/* TICKER ROTATIVO */}
       <div style={{ background: THEME.colors.dark, color: 'white', padding: '10px 0', overflow: 'hidden', fontSize: '0.85rem', minHeight: '38px', display: 'flex', alignItems: 'center' }}>
         <div key={tickerIndex} className="ticker-item" style={{ display: 'flex', alignItems: 'center', gap: '8px', paddingLeft: '32px', width: '100%' }}>
           <span style={{ fontSize: '1rem' }}>{currentTicker.icon}</span>
@@ -211,7 +206,6 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
         </div>
       </div>
 
-      {/* HERO SECTION */}
       <div style={{ position: 'relative', minHeight: '80vh', display: 'flex', alignItems: 'center', background: `linear-gradient(135deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.8) 100%), url('https://images.unsplash.com/photo-1497366216548-37526070297c?auto=format&fit=crop&w=1920&q=80') center/cover`, overflow: 'hidden' }}>
         <div style={{ position: 'absolute', top: '10%', right: '10%', width: '300px', height: '300px', border: `2px solid ${THEME.colors.secondary}`, borderRadius: '50%', opacity: 0.4 }}></div>
         <div style={{ maxWidth: '1200px', margin: '0 auto', padding: '60px 32px', textAlign: 'center', position: 'relative', zIndex: 1, width: '100%' }}>
@@ -222,7 +216,6 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
         </div>
       </div>
 
-      {/* 3 CATEGORÍAS */}
       <div style={{ padding: '80px 32px', maxWidth: '1200px', margin: '0 auto', textAlign: 'center' }}>
         <h2 style={{ fontSize: '2.5rem', marginBottom: '16px', color: THEME.colors.text }}>¿Qué tipo de inmueble necesitas?</h2>
         <p style={{ fontSize: '1.1rem', color: THEME.colors.textLight, marginBottom: '60px' }}>Elige tu categoría y deja que nuestro algoritmo haga el resto.</p>
@@ -241,7 +234,6 @@ function HomeView({ onNavigate, selectedCategory, setSelectedCategory }) {
         </div>
       </div>
 
-      {/* TERRAMAGIA */}
       <div style={{ padding: '80px 32px', background: THEME.colors.white }}>
         <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
           <div style={{ textAlign: 'center', marginBottom: '60px' }}>
@@ -488,7 +480,7 @@ function IUBWizard({ user, profile, supabase, category, onNavigate }) {
 
         {step === 2 && (
           <div>
-            <h3 style={{ color: THEME.colors.primary, marginBottom: '24px' }}> 2. Ubicación y Características</h3>
+            <h3 style={{ color: THEME.colors.primary, marginBottom: '24px' }}>📍 2. Ubicación y Características</h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
               <div><label style={labelStyle}>Barrio / Zona preferida</label><input value={form.barrio} onChange={e => update('barrio', e.target.value)} style={inputStyle} /></div>
               <div><label style={labelStyle}>Zona</label><select value={form.zona} onChange={e => update('zona', e.target.value)} style={inputStyle}><option>Norte</option><option>Sur</option><option>Centro</option></select></div>
@@ -702,7 +694,7 @@ function MasivaWizard({ user, profile, supabase, category, onNavigate }) {
     <div style={{ padding: '40px 32px', maxWidth: '900px', margin: '0 auto' }}>
       <div style={{ background: THEME.colors.white, padding: '48px', borderRadius: THEME.radius.lg, boxShadow: THEME.shadow }}>
         <div style={{ fontSize: '0.9rem', color: THEME.colors.textLight, marginBottom: '24px' }}><button onClick={() => onNavigate('dashboard')} style={{ background: 'none', border: 'none', color: THEME.colors.primary, cursor: 'pointer', padding: 0 }}>Dashboard</button><span style={{ margin: '0 8px' }}>&gt;</span><span>Carga Masiva - {categoriaLabels[category]}</span></div>
-        <h2 style={{ textAlign: 'center', marginBottom: '16px' }}> Carga Masiva de {categoriaLabels[category]}</h2>
+        <h2 style={{ textAlign: 'center', marginBottom: '16px' }}>📊 Carga Masiva de {categoriaLabels[category]}</h2>
         <p style={{ textAlign: 'center', color: THEME.colors.textLight, marginBottom: '32px' }}>Sube un archivo Excel o CSV con múltiples inmuebles</p>
 
         <div onClick={() => document.getElementById('masiva-upload').click()} style={{ border: '3px dashed #e2e8f0', borderRadius: THEME.radius.lg, padding: '60px 32px', textAlign: 'center', cursor: 'pointer', background: '#f8f9fa', transition: 'all 0.2s' }}
@@ -781,11 +773,14 @@ function IUBDetailView({ item, supabase, onNavigate }) {
         </div>
         <h2 style={{ margin: '0 0 16px 0', color: THEME.colors.text, fontSize: '1.5rem' }}>{item.cantidad_locales || 1} {item.segmentos || 'Locales'} en {item.ciudad} zona {item.zona}</h2>
         <p style={{ margin: '0 0 16px 0', color: THEME.colors.text, fontSize: '1.1rem' }}>{item.area_min}-{item.area_max} m² · <strong>${(item.canon_arriendo || 0).toLocaleString()}/mes</strong></p>
-        {item.caracteristicas && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {JSON.parse(item.caracteristicas).map((c, i) => (<span key={i} style={{ padding: '6px 14px', background: `${THEME.colors.secondary}30`, color: THEME.colors.text, borderRadius: THEME.radius.full, fontSize: '0.85rem', fontWeight: 600 }}>{c}</span>))}
-          </div>
-        )}
+        {item.caracteristicas && (() => {
+          try {
+            const chars = JSON.parse(item.caracteristicas);
+            return Array.isArray(chars) ? chars.map((c, i) => (
+              <span key={i} style={{ padding: '6px 14px', background: `${THEME.colors.secondary}30`, color: THEME.colors.text, borderRadius: THEME.radius.full, fontSize: '0.85rem', fontWeight: 600 }}>{c}</span>
+            )) : null;
+          } catch (e) { return null; }
+        })()}
       </div>
 
       <h3 style={{ color: THEME.colors.text, marginBottom: '24px' }}>Esta búsqueda tiene {matches.length} Matches</h3>
@@ -945,4 +940,4 @@ function AdminPanel({ supabase, onNavigate, setSelectedItem }) {
     </div>
   );
 }
-// END OF FILE - Si ves esto, el archivo está completo.
+// FIN DEL ARCHIVO - Si ves esto, el archivo está completo y sin cortes.
