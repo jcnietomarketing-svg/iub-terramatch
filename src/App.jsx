@@ -1,9 +1,14 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@supabase/supabase-js';
+import emailjs from '@emailjs/browser';
 
 const SUPABASE_URL = 'https://wqzwwzmeetykcvhekerl.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Indxend3em1lZXR5a2N2aGVrZXJsIiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTAzNDg3OTcsImV4cCI6MjEwNTkyNDc5N30.6NJ0fA475cC5EKWGW4EYJyuSHOI9XPor41PTnWNHsRY';
 const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+const EMAILJS_SERVICE_ID = 'service_ttphx4p';
+const EMAILJS_TEMPLATE_ID = 'template_niyhgdg';
+const EMAILJS_PUBLIC_KEY = 'xUhjgFvO907Lhhq0M';
 
 const THEME = {
   colors: { primary: '#e95442', secondary: '#b9d3dc', text: '#2d3748', textLight: '#718096', bg: '#fafafa', white: '#ffffff', success: '#48bb78', warning: '#ed8936', dark: '#1a202c', info: '#4299e1' },
@@ -83,7 +88,7 @@ export default function App() {
   async function loadNotifications() {
     if (!user) return;
     try {
-      const { data } = await supabase.from('notificaciones').select('*').eq('user_id', user.id).order('creado_en', { ascending: false }).limit(10);
+      const { data } = await supabase.from('notificaciones').select('*').eq('user_id', user.id).order('creado_en', { ascending: false }).limit(20);
       setNotifications(data || []);
       setUnreadCount((data || []).filter(n => !n.leida).length);
     } catch (error) { console.error('Error cargando notificaciones:', error); }
@@ -93,7 +98,7 @@ export default function App() {
     try {
       await supabase.from('notificaciones').update({ leida: true }).eq('id', id);
       loadNotifications();
-    } catch (error) { console.error('Error actualizando:', error); }
+    } catch (error) { console.error('Error:', error); }
   }
 
   async function handleLogout() { await supabase.auth.signOut(); setUser(null); setProfile(null); setView('home'); setNotifications([]); setUnreadCount(0); }
@@ -138,7 +143,7 @@ export default function App() {
                 )}
               </div>
               <button onClick={() => setView('dashboard')} style={{ padding: '8px 20px', background: 'transparent', border: `1px solid ${THEME.colors.primary}`, color: THEME.colors.primary, borderRadius: THEME.radius.full, fontWeight: 700 }}>Dashboard</button>
-              {isAdmin && <button onClick={() => setView('admin')} style={{ padding: '8px 20px', background: THEME.colors.dark, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>️ Admin</button>}
+              {isAdmin && <button onClick={() => setView('admin')} style={{ padding: '8px 20px', background: THEME.colors.dark, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>🛡️ Admin</button>}
               <button onClick={handleLogout} style={{ padding: '8px 20px', background: THEME.colors.textLight, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>Salir</button>
             </>
           ) : (
@@ -183,9 +188,8 @@ export default function App() {
             <div>
               <h4 style={{ fontSize: '1rem', marginBottom: '16px', color: THEME.colors.secondary }}>Legal</h4>
               <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
-                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Términos y Condiciones</button></li>
-                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Política de Privacidad</button></li>
-                <li style={{ marginBottom: '12px' }}><button style={{ background: 'none', border: 'none', color: 'white', opacity: 0.7, cursor: 'pointer', padding: 0, fontSize: '0.9rem' }}>Política de Cookies</button></li>
+                <li style={{ marginBottom: '12px' }}><a href="/documentos-legales/terminos-y-condiciones.pdf" target="_blank" rel="noopener noreferrer" style={{ color: 'white', opacity: 0.7, textDecoration: 'none', fontSize: '0.9rem' }}>Términos y Condiciones</a></li>
+                <li style={{ marginBottom: '12px' }}><a href="/documentos-legales/politica-privacidad.pdf" target="_blank" rel="noopener noreferrer" style={{ color: 'white', opacity: 0.7, textDecoration: 'none', fontSize: '0.9rem' }}>Política de Privacidad</a></li>
               </ul>
             </div>
             <div>
@@ -211,329 +215,174 @@ export default function App() {
   );
 }
 
-// ... (mantener HomeView, ProximamenteView, RegisterView, LoginView, DashboardView, IUBWizard, OfertaWizard, MasivaWizard, AdminPanel igual que antes) ...
-
-function IUBDetailView({ item, supabase, profile, onNavigate }) {
-  const [matches, setMatches] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showContact, setShowContact] = useState(null);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedMatch, setSelectedMatch] = useState(null);
-  const [scheduleForm, setScheduleForm] = useState({ fecha: '', hora: '', notas: '' });
-  const [scheduling, setScheduling] = useState(false);
-
-  useEffect(() => { loadMatches(); }, [item]);
-  async function loadMatches() {
+function RegisterView({ supabase, category, onSuccess, onNavigate }) {
+  const [form, setForm] = useState({ nombre: '', apellido: '', cedula: '', email: '', celular: '' });
+  const [acepta, setAcepta] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState('');
+  const categoriaLabels = { locales: 'Locales', bodegas: 'Bodegas', oficinas: 'Oficinas' };
+  
+  const handleRegister = async () => {
+    if (!acepta) { setError('Debes aceptar los Términos y Condiciones, incluyendo la Cláusula de Mandato.'); return; }
+    setLoading(true); setError('');
     try {
-      setLoading(true);
-      const { data } = await supabase.from('matches').select('*, propiedades(*), iubs(*)').eq('iub_id', item.id).order('score', { ascending: false });
-      setMatches(data || []);
-    } catch (error) { console.error('Error loading matches:', error); } finally { setLoading(false); }
-  }
+      const { data: authData, error: authError } = await supabase.auth.signUp({ email: form.email, password: 'TerraMatch2026!' });
+      if (authError) throw authError;
+      
+      await supabase.from('profiles').insert([{ 
+        id: authData.user.id, 
+        nombre: form.nombre, 
+        apellido: form.apellido, 
+        email: form.email, 
+        celular: form.celular, 
+        categoria_preferida: category, 
+        acepto_terminos: true 
+      }]);
 
-  const updateEstado = async (matchId, estado) => {
-    try { await supabase.from('matches').update({ estado }).eq('id', matchId); loadMatches(); } 
-    catch (error) { alert('Error: ' + error.message); }
-  };
+      const templateParams = { to_name: form.nombre, to_email: form.email };
+      try {
+        await emailjs.send(EMAILJS_SERVICE_ID, EMAILJS_TEMPLATE_ID, templateParams, EMAILJS_PUBLIC_KEY);
+      } catch (emailError) { console.error('Error email:', emailError); }
 
-  const handleSchedule = async () => {
-    if (!selectedMatch || !scheduleForm.fecha || !scheduleForm.hora) {
-      alert('Por favor completa fecha y hora');
-      return;
+      onSuccess(authData.user);
+    } catch (err) { 
+      setError(err.message || 'Error al crear cuenta.'); 
+    } finally { 
+      setLoading(false); 
     }
-    setScheduling(true);
-    try {
-      const { error } = await supabase.from('reuniones').insert([{
-        match_id: selectedMatch.id,
-        iub_id: item.id,
-        propiedad_id: selectedMatch.propiedad_id,
-        user_iub: item.user_id,
-        user_prop: selectedMatch.propiedades?.user_id,
-        fecha_propuesta: scheduleForm.fecha,
-        hora_propuesta: scheduleForm.hora,
-        estado: 'pendiente',
-        notas: scheduleForm.notas
-      }]);
-      if (error) throw error;
-      
-      // Enviar notificación al propietario
-      await supabase.from('notificaciones').insert([{
-        user_id: selectedMatch.propiedades?.user_id,
-        titulo: '📅 Solicitud de reunión',
-        mensaje: `El usuario ${profile?.nombre} quiere agendar una reunión para el ${scheduleForm.fecha} a las ${scheduleForm.hora}`,
-        tipo: 'reunion'
-      }]);
-      
-      alert('✅ Reunión agendada. El propietario recibirá una notificación.');
-      setShowScheduleModal(false);
-      setScheduleForm({ fecha: '', hora: '', notas: '' });
-    } catch (err) { alert('Error: ' + err.message); } finally { setScheduling(false); }
   };
 
-  const safeParseJSON = (str) => {
-    try {
-      const parsed = JSON.parse(str);
-      return Array.isArray(parsed) ? parsed : [];
-    } catch (e) { return []; }
-  };
-
+  const inputStyle = { width: '100%', padding: '14px', marginBottom: '16px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, boxSizing: 'border-box', fontSize: '1rem' };
+  
   return (
-    <div style={{ padding: '40px 32px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ fontSize: '0.9rem', color: THEME.colors.textLight, marginBottom: '24px' }}>
-        <button onClick={() => onNavigate('dashboard')} style={{ background: 'none', border: 'none', color: THEME.colors.primary, cursor: 'pointer', padding: 0 }}>Dashboard</button>
-        <span style={{ margin: '0 8px' }}>&gt;</span><span style={{ color: THEME.colors.text, fontWeight: 600 }}>{item.codigo_iub}</span>
+    <div style={{ padding: '60px 32px', maxWidth: '600px', margin: '0 auto' }}>
+      <div style={{ background: THEME.colors.white, padding: '48px', borderRadius: THEME.radius.lg, boxShadow: THEME.shadow }}>
+        <div style={{ textAlign: 'center', marginBottom: '32px' }}><Logo size={140} /></div>
+        <h2 style={{ textAlign: 'center', marginBottom: '8px', color: THEME.colors.text }}>Crear Cuenta</h2>
+        <p style={{ textAlign: 'center', color: THEME.colors.primary, marginBottom: '32px', fontWeight: 600 }}>Categoría: {categoriaLabels[category] || 'Locales'}</p>
+        {error && <div style={{ background: '#fff5f5', color: THEME.colors.primary, padding: '12px', borderRadius: THEME.radius.sm, marginBottom: '16px', textAlign: 'center' }}>{error}</div>}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Nombres *</label><input placeholder="Escribe tu nombre" value={form.nombre} onChange={e => setForm({...form, nombre: e.target.value})} style={inputStyle} /></div>
+          <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Apellidos *</label><input placeholder="Escribe tu apellido" value={form.apellido} onChange={e => setForm({...form, apellido: e.target.value})} style={inputStyle} /></div>
+        </div>
+        <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Cédula *</label>
+        <input placeholder="Escribe tu n° de identificacion" value={form.cedula} onChange={e => setForm({...form, cedula: e.target.value})} style={inputStyle} />
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
+          <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Email *</label><input type="email" placeholder="Escribe tu correo" value={form.email} onChange={e => setForm({...form, email: e.target.value})} style={inputStyle} /></div>
+          <div><label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Celular *</label><input placeholder="Escribe tu n° de celular" value={form.celular} onChange={e => setForm({...form, celular: e.target.value})} style={inputStyle} /></div>
+        </div>
+        
+        <label style={{ display: 'flex', gap: '12px', alignItems: 'flex-start', marginBottom: '24px', cursor: 'pointer' }}>
+          <input type="checkbox" checked={acepta} onChange={e => setAcepta(e.target.checked)} style={{ marginTop: '4px', transform: 'scale(1.2)' }} />
+          <span style={{ fontSize: '0.9rem', color: THEME.colors.textLight, lineHeight: 1.4 }}>
+            He leído y acepto los <a href="/documentos-legales/terminos-y-condiciones.pdf" target="_blank" rel="noopener noreferrer" style={{ color: THEME.colors.primary, fontWeight: 700, textDecoration: 'underline' }}>Términos y Condiciones</a>, 
+            incluyendo la <strong>Cláusula de Mandato</strong> que establece a TerraMatch como intermediario autorizado.
+          </span>
+        </label>
+
+        <button onClick={handleRegister} disabled={loading} style={{ width: '100%', padding: '16px', background: THEME.colors.primary, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700, fontSize: '1rem', marginBottom: '16px' }}>{loading ? 'Creando cuenta...' : 'CONTINUAR'}</button>
+        <p style={{ textAlign: 'center', color: THEME.colors.textLight, fontSize: '0.9rem' }}>¿Ya tienes cuenta? <button onClick={() => onNavigate('login')} style={{ background: 'none', border: 'none', color: THEME.colors.primary, cursor: 'pointer', fontWeight: 700, padding: 0 }}>INGRESAR</button></p>
       </div>
-
-      <div style={{ background: THEME.colors.white, padding: '32px', borderRadius: THEME.radius.lg, boxShadow: THEME.shadow, marginBottom: '32px', borderLeft: `6px solid ${THEME.colors.primary}` }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-          <Badge color="warning">{item.tipo_negocio}</Badge>
-          <span style={{ fontFamily: 'monospace', fontSize: '1.2rem', color: THEME.colors.primary, fontWeight: 700 }}>{item.codigo_iub}</span>
-        </div>
-        <h2 style={{ margin: '0 0 16px 0', color: THEME.colors.text, fontSize: '1.5rem' }}>{item.cantidad_locales || 1} {item.segmentos || 'Locales'} en {item.ciudad} zona {item.zona}</h2>
-        <p style={{ margin: '0 0 16px 0', color: THEME.colors.text, fontSize: '1.1rem' }}>{item.area_min} m² · <strong>${(item.canon_arriendo || 0).toLocaleString()}/mes</strong></p>
-        {item.caracteristicas && (
-          <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
-            {safeParseJSON(item.caracteristicas).map((c, i) => (<span key={i} style={{ padding: '6px 14px', background: `${THEME.colors.secondary}30`, color: THEME.colors.text, borderRadius: THEME.radius.full, fontSize: '0.85rem', fontWeight: 600 }}>{c}</span>))}
-          </div>
-        )}
-      </div>
-
-      <h3 style={{ color: THEME.colors.text, marginBottom: '24px' }}>Esta búsqueda tiene {matches.length} Matches</h3>
-      {loading ? <div style={{ textAlign: 'center', padding: '40px', color: THEME.colors.textLight }}>Cargando...</div> : matches.length === 0 ? (
-        <div style={{ background: THEME.colors.white, padding: '60px', borderRadius: THEME.radius.lg, textAlign: 'center', boxShadow: THEME.shadow }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}>🔍</div><h3>Aún no hay matches</h3></div>
-      ) : (
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {matches.map(match => (
-            <div key={match.id} style={{ background: THEME.colors.white, padding: '24px', borderRadius: THEME.radius.md, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '20px', border: `2px solid ${match.estado === 'favorito' ? THEME.colors.success : match.estado === 'descartado' ? '#e2e8f0' : 'transparent'}` }}>
-              <div style={{ flex: 1, minWidth: '250px' }}>
-                <h4 style={{ margin: '0 0 8px 0', color: THEME.colors.text, fontSize: '1.1rem' }}>{match.propiedades?.titulo || 'Inmueble'}</h4>
-                <div style={{ display: 'flex', gap: '16px', color: THEME.colors.textLight, fontSize: '0.9rem', marginBottom: '12px', flexWrap: 'wrap' }}>
-                  <span> {match.propiedades?.ciudad} - {match.propiedades?.zona}</span>
-                  <span>📐 {match.propiedades?.area_total} m²</span>
-                  <span>💰 ${match.propiedades?.precio?.toLocaleString()}/mes</span>
-                </div>
-                
-                {/* Botón para ver contacto */}
-                {showContact === match.id ? (
-                  <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: THEME.radius.sm, marginTop: '12px', border: `1px solid ${THEME.colors.primary}30` }}>
-                    <h5 style={{ margin: '0 0 8px 0', color: THEME.colors.primary }}>🔒 Contacto del Propietario</h5>
-                    <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Nombre:</strong> {match.propiedades?.user_id ? 'Ver en perfil' : 'No disponible'}</p>
-                    <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Email:</strong> {match.propiedades?.email_contacto || 'contacto@ejemplo.com'}</p>
-                    <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Teléfono:</strong> {match.propiedades?.telefono || '+57 300 000 0000'}</p>
-                    <button onClick={() => setShowContact(null)} style={{ marginTop: '8px', padding: '6px 12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: THEME.radius.full, fontSize: '0.85rem', cursor: 'pointer' }}>Ocultar</button>
-                  </div>
-                ) : (
-                  <button onClick={() => setShowContact(match.id)} style={{ marginTop: '12px', padding: '8px 16px', background: THEME.colors.info, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                    👁️ Ver contacto
-                  </button>
-                )}
-              </div>
-              <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                <Badge color={match.estado === 'favorito' ? 'success' : match.estado === 'descartado' ? 'gray' : 'warning'}>{match.estado || 'nuevo'}</Badge>
-                {match.estado === 'favorito' && (
-                  <button onClick={() => { setSelectedMatch(match); setShowScheduleModal(true); }} style={{ padding: '10px 20px', background: THEME.colors.primary, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700, cursor: 'pointer' }}>
-                    📅 Agendar
-                  </button>
-                )}
-                {match.estado !== 'favorito' && (
-                  <button onClick={() => updateEstado(match.id, 'favorito')} style={{ padding: '10px 20px', background: THEME.colors.success, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700 }}>Favorito</button>
-                )}
-                {match.estado !== 'descartado' && (
-                  <button onClick={() => updateEstado(match.id, 'descartado')} style={{ padding: '10px 20px', background: 'white', color: THEME.colors.textLight, border: `1px solid #e2e8f0`, borderRadius: THEME.radius.full, fontWeight: 700 }}>Descartar</button>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal de Agendamiento */}
-      {showScheduleModal && selectedMatch && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: THEME.colors.white, padding: '32px', borderRadius: THEME.radius.lg, maxWidth: '500px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ marginBottom: '16px', color: THEME.colors.text }}>📅 Agendar Reunión</h3>
-            <p style={{ color: THEME.colors.textLight, marginBottom: '24px', fontSize: '0.9rem' }}>
-              Inmueble: <strong>{selectedMatch.propiedades?.titulo}</strong><br/>
-              Código: <strong>{selectedMatch.propiedades?.codigo_propiedad}</strong>
-            </p>
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Fecha propuesta *</label>
-            <input type="date" value={scheduleForm.fecha} onChange={(e) => setScheduleForm({...scheduleForm, fecha: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '16px', boxSizing: 'border-box', fontSize: '1rem' }} />
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Hora propuesta *</label>
-            <input type="time" value={scheduleForm.hora} onChange={(e) => setScheduleForm({...scheduleForm, hora: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '16px', boxSizing: 'border-box', fontSize: '1rem' }} />
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Notas adicionales</label>
-            <textarea value={scheduleForm.notas} onChange={(e) => setScheduleForm({...scheduleForm, notas: e.target.value})} rows="3" placeholder="Ej: Quiero visitar el local en la mañana..." style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '24px', boxSizing: 'border-box', fontSize: '1rem', resize: 'vertical', fontFamily: 'Comfortaa' }} />
-            
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setShowScheduleModal(false)} style={{ flex: 1, padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: THEME.radius.full, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={handleSchedule} disabled={scheduling} style={{ flex: 2, padding: '12px', background: THEME.colors.primary, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700, cursor: scheduling ? 'not-allowed' : 'pointer', opacity: scheduling ? 0.7 : 1 }}>
-                {scheduling ? 'Agendando...' : 'Confirmar Reunión'}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
 
-function LocalDetailView({ item, supabase, profile, onNavigate }) {
-  const [iubsInteresados, setIubsInteresados] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [showContact, setShowContact] = useState(null);
-  const [showScheduleModal, setShowScheduleModal] = useState(false);
-  const [selectedIUB, setSelectedIUB] = useState(null);
-  const [scheduleForm, setScheduleForm] = useState({ fecha: '', hora: '', notas: '' });
-  const [scheduling, setScheduling] = useState(false);
+// ... (Mantén HomeView, ProximamenteView, LoginView, DashboardView, IUBWizard, OfertaWizard, MasivaWizard, IUBDetailView, LocalDetailView igual que antes) ...
+// Para ahorrar espacio, aquí solo muestro la nueva versión de AdminPanel. 
+// Asegúrate de que el resto de funciones estén en tu archivo.
 
-  useEffect(() => { loadIUBs(); }, [item]);
-  async function loadIUBs() {
+function AdminPanel({ supabase, onNavigate, setSelectedItem }) {
+  const [tab, setTab] = useState('usuarios');
+  const [usuarios, setUsuarios] = useState([]);
+  const [iubs, setIubs] = useState([]);
+  const [locales, setLocales] = useState([]);
+  const [matchCounts, setMatchCounts] = useState({ iubs: {}, props: {} });
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => { loadData(); }, []);
+
+  async function loadData() {
     try {
       setLoading(true);
-      const { data } = await supabase.from('matches').select('*, iubs(*)').eq('propiedad_id', item.id);
-      setIubsInteresados(data || []);
-    } catch (error) { console.error('Error loading IUBs:', error); } finally { setLoading(false); }
+      // 1. Cargar Usuarios
+      const { data: usersData } = await supabase.from('profiles').select('*').order('creado_en', { ascending: false });
+      setUsuarios(usersData || []);
+
+      // 2. Cargar IUBs y Locales
+      const { data: iubsData } = await supabase.from('iubs').select('*').order('creado_en', { ascending: false });
+      setIubs(iubsData || []);
+      const { data: propsData } = await supabase.from('propiedades').select('*').order('creado_en', { ascending: false });
+      setLocales(propsData || []);
+      
+      // 3. Contar Matches
+      const { data: matchesData } = await supabase.from('matches').select('iub_id, propiedad_id');
+      const iubCounts = {}; const propCounts = {};
+      if (matchesData) { 
+        matchesData.forEach(m => { 
+          iubCounts[m.iub_id] = (iubCounts[m.iub_id] || 0) + 1; 
+          propCounts[m.propiedad_id] = (propCounts[m.propiedad_id] || 0) + 1; 
+        }); 
+      }
+      setMatchCounts({ iubs: iubCounts, props: propCounts });
+    } catch (error) { console.error('Error loading admin data:', error); } finally { setLoading(false); }
   }
 
-  const handleSchedule = async () => {
-    if (!selectedIUB || !scheduleForm.fecha || !scheduleForm.hora) {
-      alert('Por favor completa fecha y hora');
-      return;
-    }
-    setScheduling(true);
-    try {
-      const match = iubsInteresados.find(m => m.iubs?.id === selectedIUB.id);
-      const { error } = await supabase.from('reuniones').insert([{
-        match_id: match?.id,
-        iub_id: selectedIUB.id,
-        propiedad_id: item.id,
-        user_iub: selectedIUB.user_id,
-        user_prop: item.user_id,
-        fecha_propuesta: scheduleForm.fecha,
-        hora_propuesta: scheduleForm.hora,
-        estado: 'pendiente',
-        notas: scheduleForm.notas
-      }]);
-      if (error) throw error;
-      
-      // Enviar notificación al buscador
-      await supabase.from('notificaciones').insert([{
-        user_id: selectedIUB.user_id,
-        titulo: '📅 Solicitud de reunión',
-        mensaje: `El propietario de ${item.titulo} quiere agendar una reunión para el ${scheduleForm.fecha} a las ${scheduleForm.hora}`,
-        tipo: 'reunion'
-      }]);
-      
-      alert('✅ Reunión agendada. El buscador recibirá una notificación.');
-      setShowScheduleModal(false);
-      setScheduleForm({ fecha: '', hora: '', notas: '' });
-    } catch (err) { alert('Error: ' + err.message); } finally { setScheduling(false); }
-  };
-
   return (
-    <div style={{ padding: '40px 32px', maxWidth: '1200px', margin: '0 auto' }}>
-      <div style={{ fontSize: '0.9rem', color: THEME.colors.textLight, marginBottom: '24px' }}>
-        <button onClick={() => onNavigate('dashboard')} style={{ background: 'none', border: 'none', color: THEME.colors.primary, cursor: 'pointer', padding: 0 }}>Dashboard</button>
-        <span style={{ margin: '0 8px' }}>&gt;</span><span style={{ color: THEME.colors.text, fontWeight: 600 }}>{item.codigo_propiedad || item.titulo}</span>
+    <div style={{ padding: '40px 32px', maxWidth: '1400px', margin: '0 auto' }}>
+      <div style={{ background: THEME.colors.dark, color: 'white', padding: '32px', borderRadius: THEME.radius.lg, marginBottom: '32px' }}>
+        <h2 style={{ margin: '0 0 8px 0' }}>🛡️ Torre de Control (Admin)</h2>
+        <p style={{ margin: 0, opacity: 0.8 }}>Gestión global de Usuarios, IUBs, Locales y Matches</p>
       </div>
 
-      <div style={{ background: THEME.colors.white, padding: '32px', borderRadius: THEME.radius.lg, boxShadow: THEME.shadow, marginBottom: '32px' }}>
-        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '32px' }}>
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '16px', marginBottom: '16px' }}>
-              <Badge color="primary">{item.codigo_propiedad || 'SIN ID'}</Badge>
-              <Badge color="success">{item.operacion}</Badge>
-            </div>
-            <h2 style={{ margin: '0 0 16px 0', color: THEME.colors.text, fontSize: '1.5rem' }}>{item.titulo}</h2>
-            <p style={{ margin: '0 0 8px 0', color: THEME.colors.text, fontSize: '1.1rem' }}><strong>${item.precio?.toLocaleString()}</strong> /mes</p>
-            <p style={{ margin: '0', color: THEME.colors.textLight }}>{item.direccion} · {item.ciudad}</p>
-          </div>
-          <div style={{ background: '#fff5f5', padding: '24px', borderRadius: THEME.radius.md, border: `1px solid ${THEME.colors.primary}30` }}>
-            <h4 style={{ color: THEME.colors.primary, marginTop: 0, marginBottom: '16px' }}>🔒 Contacto Propietario</h4>
-            <p style={{ margin: '8px 0', fontWeight: 700, color: THEME.colors.text }}>{profile?.nombre}</p>
-            <p style={{ margin: '8px 0', color: THEME.colors.textLight }}>📞 {profile?.celular}</p>
-            <p style={{ margin: '8px 0', color: THEME.colors.textLight }}>✉️ {profile?.email}</p>
-            {item.matricula_inmobiliaria && <p style={{ margin: '8px 0', color: THEME.colors.textLight, fontSize: '0.85rem' }}>Matrícula: {item.matricula_inmobiliaria}</p>}
-          </div>
-        </div>
+      <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
+        <button onClick={() => setTab('usuarios')} style={{ padding: '12px 24px', background: tab === 'usuarios' ? THEME.colors.primary : THEME.colors.white, color: tab === 'usuarios' ? 'white' : THEME.colors.text, border: tab === 'usuarios' ? 'none' : `1px solid #e2e8f0`, borderRadius: THEME.radius.full, fontWeight: 700, cursor: 'pointer' }}>👥 Usuarios Registrados ({usuarios.length})</button>
+        <button onClick={() => setTab('iubs')} style={{ padding: '12px 24px', background: tab === 'iubs' ? THEME.colors.primary : THEME.colors.white, color: tab === 'iubs' ? 'white' : THEME.colors.text, border: tab === 'iubs' ? 'none' : `1px solid #e2e8f0`, borderRadius: THEME.radius.full, fontWeight: 700, cursor: 'pointer' }}>Gestión de IUBs ({iubs.length})</button>
+        <button onClick={() => setTab('locales')} style={{ padding: '12px 24px', background: tab === 'locales' ? THEME.colors.primary : THEME.colors.white, color: tab === 'locales' ? 'white' : THEME.colors.text, border: tab === 'locales' ? 'none' : `1px solid #e2e8f0`, borderRadius: THEME.radius.full, fontWeight: 700, cursor: 'pointer' }}>Gestión de Locales ({locales.length})</button>
       </div>
 
-      <h3 style={{ color: THEME.colors.text, marginBottom: '24px' }}>Este local tiene {iubsInteresados.length} Matches (IUBs interesados)</h3>
-      {loading ? <div style={{ textAlign: 'center', padding: '40px', color: THEME.colors.textLight }}>Cargando...</div> : iubsInteresados.length === 0 ? (
-        <div style={{ background: THEME.colors.white, padding: '60px', borderRadius: THEME.radius.lg, textAlign: 'center', boxShadow: THEME.shadow }}><div style={{ fontSize: '3rem', marginBottom: '16px' }}>📊</div><h3>Aún no hay IUBs interesados</h3></div>
-      ) : (
-        <div style={{ display: 'grid', gap: '16px' }}>
-          {iubsInteresados.map(match => (
-            <div key={match.id} style={{ background: THEME.colors.white, padding: '24px', borderRadius: THEME.radius.md, boxShadow: '0 4px 20px rgba(0,0,0,0.05)', border: `2px solid ${match.estado === 'favorito' ? THEME.colors.success : 'transparent'}` }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'start', flexWrap: 'wrap', gap: '16px' }}>
-                <div style={{ flex: 1 }}>
-                  <h4 style={{ margin: '0 0 8px 0', color: THEME.colors.text, fontSize: '1.1rem' }}>
-                    <span style={{ fontFamily: 'monospace', color: THEME.colors.primary, fontWeight: 700 }}>{match.iubs?.codigo_iub}</span>
-                    {' - '}{match.iubs?.nombre_completo || 'Usuario'}
-                  </h4>
-                  <div style={{ display: 'flex', gap: '16px', color: THEME.colors.textLight, fontSize: '0.9rem', flexWrap: 'wrap' }}>
-                    <span> {match.iubs?.ciudad} - {match.iubs?.zona}</span>
-                    <span>📐 {match.iubs?.area_min} m²</span>
-                    <span>💰 ${match.iubs?.canon_arriendo?.toLocaleString()}/mes</span>
-                  </div>
-                  
-                  {showContact === match.id ? (
-                    <div style={{ background: '#f8f9fa', padding: '16px', borderRadius: THEME.radius.sm, marginTop: '12px', border: `1px solid ${THEME.colors.primary}30` }}>
-                      <h5 style={{ margin: '0 0 8px 0', color: THEME.colors.primary }}>🔒 Contacto del Buscador</h5>
-                      <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Nombre:</strong> {match.iubs?.nombre_completo}</p>
-                      <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Email:</strong> {match.iubs?.email_contacto}</p>
-                      <p style={{ margin: '4px 0', fontSize: '0.9rem' }}><strong>Teléfono:</strong> {match.iubs?.celular}</p>
-                      <button onClick={() => setShowContact(null)} style={{ marginTop: '8px', padding: '6px 12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: THEME.radius.full, fontSize: '0.85rem', cursor: 'pointer' }}>Ocultar</button>
-                    </div>
-                  ) : (
-                    <button onClick={() => setShowContact(match.id)} style={{ marginTop: '12px', padding: '8px 16px', background: THEME.colors.info, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>
-                      👁️ Ver contacto
-                    </button>
-                  )}
-                </div>
-                <div style={{ display: 'flex', gap: '12px', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <Badge color={match.estado === 'favorito' ? 'success' : match.estado === 'descartado' ? 'gray' : 'warning'}>{match.estado || 'nuevo'}</Badge>
-                  {match.estado === 'favorito' && (
-                    <button onClick={() => { setSelectedIUB(match.iubs); setShowScheduleModal(true); }} style={{ padding: '10px 20px', background: THEME.colors.primary, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700, cursor: 'pointer' }}>
-                      📅 Agendar
-                    </button>
-                  )}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      )}
-
-      {/* Modal de Agendamiento */}
-      {showScheduleModal && selectedIUB && (
-        <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', justifyContent: 'center', alignItems: 'center', zIndex: 1000, padding: '20px' }}>
-          <div style={{ background: THEME.colors.white, padding: '32px', borderRadius: THEME.radius.lg, maxWidth: '500px', width: '100%', maxHeight: '90vh', overflowY: 'auto' }}>
-            <h3 style={{ marginBottom: '16px', color: THEME.colors.text }}>📅 Agendar Reunión</h3>
-            <p style={{ color: THEME.colors.textLight, marginBottom: '24px', fontSize: '0.9rem' }}>
-              Buscador: <strong>{selectedIUB.nombre_completo}</strong><br/>
-              Código IUB: <strong>{selectedIUB.codigo_iub}</strong>
-            </p>
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Fecha propuesta *</label>
-            <input type="date" value={scheduleForm.fecha} onChange={(e) => setScheduleForm({...scheduleForm, fecha: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '16px', boxSizing: 'border-box', fontSize: '1rem' }} />
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Hora propuesta *</label>
-            <input type="time" value={scheduleForm.hora} onChange={(e) => setScheduleForm({...scheduleForm, hora: e.target.value})} style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '16px', boxSizing: 'border-box', fontSize: '1rem' }} />
-            
-            <label style={{ display: 'block', marginBottom: '8px', fontWeight: 600, fontSize: '0.9rem' }}>Notas adicionales</label>
-            <textarea value={scheduleForm.notas} onChange={(e) => setScheduleForm({...scheduleForm, notas: e.target.value})} rows="3" placeholder="Ej: Quiero mostrar el local en la mañana..." style={{ width: '100%', padding: '12px', border: '1px solid #e2e8f0', borderRadius: THEME.radius.sm, marginBottom: '24px', boxSizing: 'border-box', fontSize: '1rem', resize: 'vertical', fontFamily: 'Comfortaa' }} />
-            
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <button onClick={() => setShowScheduleModal(false)} style={{ flex: 1, padding: '12px', background: 'white', border: '1px solid #e2e8f0', borderRadius: THEME.radius.full, fontWeight: 600, cursor: 'pointer' }}>Cancelar</button>
-              <button onClick={handleSchedule} disabled={scheduling} style={{ flex: 2, padding: '12px', background: THEME.colors.primary, color: 'white', border: 'none', borderRadius: THEME.radius.full, fontWeight: 700, cursor: scheduling ? 'not-allowed' : 'pointer', opacity: scheduling ? 0.7 : 1 }}>
-                {scheduling ? 'Agendando...' : 'Confirmar Reunión'}
-              </button>
-            </div>
+      {loading ? <div style={{ textAlign: 'center', padding: '60px', color: THEME.colors.textLight }}>Cargando...</div> : (
+        tab === 'usuarios' ? (
+          <div style={{ background: THEME.colors.white, borderRadius: THEME.radius.md, boxShadow: THEME.shadow, overflow: 'hidden' }}>
+            {usuarios.length === 0 ? <div style={{ padding: '60px', textAlign: 'center' }}>No hay usuarios registrados aún</div> : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead><tr style={{ background: '#f8f9fa', borderBottom: `2px solid #e2e8f0` }}>
+                  <th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>NOMBRE</th>
+                  <th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>EMAIL</th>
+                  <th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CELULAR</th>
+                  <th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CATEGORÍA</th>
+                  <th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>REGISTRO</th>
+                </tr></thead>
+                <tbody>{usuarios.map((u) => (
+                  <tr key={u.id} style={{ borderBottom: '1px solid #e2e8f0' }}>
+                    <td style={{ padding: '16px', fontWeight: 600 }}>{u.nombre} {u.apellido}</td>
+                    <td style={{ padding: '16px', color: THEME.colors.textLight }}>{u.email}</td>
+                    <td style={{ padding: '16px' }}>{u.celular}</td>
+                    <td style={{ padding: '16px' }}><Badge color="info">{u.categoria_preferida || 'No definida'}</Badge></td>
+                    <td style={{ padding: '16px', fontSize: '0.85rem', color: THEME.colors.textLight }}>{new Date(u.creado_en || Date.now()).toLocaleDateString()}</td>
+                  </tr>
+                ))}</tbody>
+              </table>
+            )}
           </div>
-        </div>
+        ) : tab === 'iubs' ? (
+          <div style={{ background: THEME.colors.white, borderRadius: THEME.radius.md, boxShadow: THEME.shadow, overflow: 'hidden' }}>
+            {iubs.length === 0 ? <div style={{ padding: '60px', textAlign: 'center' }}>No hay IUBs registrados</div> : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead><tr style={{ background: '#f8f9fa', borderBottom: `2px solid #e2e8f0` }}><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>IUB</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ÁREA</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>MATCHES</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CIUDAD</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>TIPO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ESTADO</th></tr></thead>
+                <tbody>{iubs.map((iub) => (<tr key={iub.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => { setSelectedItem(iub); onNavigate('iub-detail'); }}><td style={{ padding: '16px', fontFamily: 'monospace', fontWeight: 700, color: THEME.colors.primary }}>{iub.codigo_iub}</td><td style={{ padding: '16px' }}>{iub.area_min} m²</td><td style={{ padding: '16px' }}><Badge color="primary">{matchCounts.iubs[iub.id] || 0}</Badge></td><td style={{ padding: '16px' }}>{iub.ciudad}</td><td style={{ padding: '16px' }}>{iub.tipo_negocio}</td><td style={{ padding: '16px' }}><Badge color={iub.estado === 'activo' ? 'success' : 'gray'}>{iub.estado}</Badge></td></tr>))}</tbody>
+              </table>
+            )}
+          </div>
+        ) : (
+          <div style={{ background: THEME.colors.white, borderRadius: THEME.radius.md, boxShadow: THEME.shadow, overflow: 'hidden' }}>
+            {locales.length === 0 ? <div style={{ padding: '60px', textAlign: 'center' }}>No hay locales registrados</div> : (
+              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+                <thead><tr style={{ background: '#f8f9fa', borderBottom: `2px solid #e2e8f0` }}><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CÓDIGO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>TÍTULO</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>CIUDAD</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>ÁREA</th><th style={{ padding: '16px', fontWeight: 700, color: THEME.colors.textLight, fontSize: '0.85rem' }}>MATCHES</th></tr></thead>
+                <tbody>{locales.map((local) => (<tr key={local.id} style={{ borderBottom: '1px solid #e2e8f0', cursor: 'pointer' }} onClick={() => { setSelectedItem(local); onNavigate('local-detail'); }}><td style={{ padding: '16px', fontFamily: 'monospace', fontWeight: 700, color: THEME.colors.primary }}>{local.codigo_propiedad || 'SIN ID'}</td><td style={{ padding: '16px', fontWeight: 600 }}>{local.titulo || 'Sin título'}</td><td style={{ padding: '16px' }}>{local.ciudad}</td><td style={{ padding: '16px' }}>{local.area_total} m²</td><td style={{ padding: '16px' }}><Badge color="primary">{matchCounts.props[local.id] || 0}</Badge></td></tr>))}</tbody>
+              </table>
+            )}
+          </div>
+        )
       )}
     </div>
   );
